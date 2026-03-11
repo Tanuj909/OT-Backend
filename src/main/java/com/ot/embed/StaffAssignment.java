@@ -1,6 +1,9 @@
 package com.ot.embed;
 
 import lombok.*;
+
+import com.ot.enums.StaffRole;
+
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,12 +14,13 @@ import jakarta.persistence.Enumerated;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StaffAssignment {
-    
-    private String staffId;
+
+    private Long staffId;
+
     private String staffName;
-    
+
     @Enumerated(EnumType.STRING)
-    private com.ot.enums.StaffRole role;
-    
+    private StaffRole role;
+
     private String department;
 }

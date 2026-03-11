@@ -12,7 +12,7 @@ import jakarta.persistence.Enumerated;
 @AllArgsConstructor
 public class SurgeonAssignment {
     
-    private String surgeonId;
+    private Long surgeonId;
     private String surgeonName;
     
     @Enumerated(EnumType.STRING)

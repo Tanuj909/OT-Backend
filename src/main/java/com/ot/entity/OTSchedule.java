@@ -45,6 +45,10 @@ public class OTSchedule {
     private Boolean isRecurring;
     private String recurringPattern;
     
+    private LocalDateTime startTime;
+
+    private LocalDateTime endTime;
+    
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;
