@@ -1,5 +1,14 @@
 package com.ot.enums;
 
 public enum SurgeonRole {
-    LEAD_SURGEON, ASSISTANT_SURGEON, CONSULTANT, RESIDENT, FELLOW
+
+    PRIMARY_SURGEON,     // Most common term in hospital systems
+    LEAD_SURGEON,
+
+    ASSISTANT_SURGEON,
+    CO_SURGEON,
+
+    CONSULTANT,
+    RESIDENT,
+    FELLOW
 }

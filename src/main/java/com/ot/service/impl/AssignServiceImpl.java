@@ -88,6 +88,19 @@ public class AssignServiceImpl implements AssignService {
 	    operationRepository.save(operation);
 	}
 	
+	
+//-------------------------------------Get Staff of Schedule Operations----------------------------------//
+	@Override
+	public Set<StaffAssignment> getAssignedStaff(Long operationId) {
+
+	    ScheduledOperation operation = operationRepository.findById(operationId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Operation not found"));
+
+	    return operation.getSupportingStaff();
+	}
+	
+	
+	
 //-------------------------------------Un-Assign Staff From Schedule Operations----------------------------------//
 	@Transactional
 	@Override
@@ -126,6 +139,9 @@ public class AssignServiceImpl implements AssignService {
 	    operationRepository.save(operation);
 	}
 	
+	
+//-------------------------------------------------Surgeon(Methods Below)-------------------------------------------------------------//
+
 //-------------------------------------Assign Surgeon For Schedule Operations----------------------------------//
 	@Transactional
 	@Override
@@ -200,6 +216,17 @@ public class AssignServiceImpl implements AssignService {
 	    operationRepository.save(operation);
 	}
 
+	
+//-------------------------------------Get Surgeon of Schedule Operations----------------------------------//
+	@Override
+	public Set<SurgeonAssignment> getAssignedSurgeons(Long operationId) {
+
+	    ScheduledOperation operation = operationRepository.findById(operationId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Operation not found"));
+
+	    return operation.getSupportingSurgeons();
+	}
+	
 //-------------------------------------Un-Assign Surgeon From Schedule Operations----------------------------------//
 	@Transactional
 	@Override

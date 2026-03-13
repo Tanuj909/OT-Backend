@@ -1,5 +1,18 @@
 package com.ot.enums;
 
 public enum StaffRole {
-    SCRUB_NURSE, CIRCULATING_NURSE, ANESTHESIA_NURSE, SURGICAL_TECH, ORDERLY
+
+    // Nursing roles
+    SCRUB_NURSE,
+    CIRCULATING_NURSE,
+    ANESTHESIA_NURSE,
+
+    // Technical roles
+    SURGICAL_TECH,
+    ANESTHESIA_TECHNICIAN,
+    OT_TECHNICIAN,
+
+    // Support staff
+    ORDERLY,
+    OT_ASSISTANT
 }

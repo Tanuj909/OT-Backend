@@ -69,6 +69,8 @@ public class PreOpAssessment {
     private String anesthesiaPlan;
     
     private String specialInstructions;
+ // PreOpAssessment entity mein add karo
+    private String statusChangeReason;
     
     @Enumerated(EnumType.STRING)
     private AssessmentStatus status;

@@ -1,12 +1,17 @@
 package com.ot.controller;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.Set;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.ot.dto.staffRequest.StaffAssignmentRequest;
 import com.ot.dto.staffRequest.StaffUnAssignRequest;
 import com.ot.dto.surgeonRequest.SurgeonAssignmentRequest;
 import com.ot.dto.surgeonRequest.UnAssignSurgeonRequest;
+import com.ot.embed.StaffAssignment;
+import com.ot.embed.SurgeonAssignment;
 import com.ot.service.AssignService;
 
 @RestController
@@ -27,6 +32,14 @@ public class AssignController {
         return ResponseEntity.ok("Staff assigned successfully");
     }
     
+    // Get Staff of scheduled operation
+    @GetMapping("/{operationId}/staff")
+    public ResponseEntity<Set<StaffAssignment>> getAssignedStaff(
+            @PathVariable Long operationId) {
+
+        return ResponseEntity.ok(assignService.getAssignedStaff(operationId));
+    }
+    
     // UnAssign Staff
     @DeleteMapping("/{operationId}/staff")
     public ResponseEntity<String> unAssignStaff(
@@ -38,6 +51,8 @@ public class AssignController {
     }
     
     
+//-------------------------------------------------Surgeon API's--------------------------------------------------//
+    
     // Assign Surgeon To Scheduled Operation
     @PostMapping("/{operationId}/surgeons")
     public ResponseEntity<String> assignSurgeon(
@@ -46,6 +61,14 @@ public class AssignController {
 
         assignService.assignSurgeon(operationId, request);
         return ResponseEntity.ok("Surgeons assigned successfully");
+    }
+    
+    // Get Surgeon of scheduled operation
+    @GetMapping("/{operationId}/surgeons")
+    public ResponseEntity<Set<SurgeonAssignment>> getAssignedSurgeons(
+            @PathVariable Long operationId) {
+
+        return ResponseEntity.ok(assignService.getAssignedSurgeons(operationId));
     }
     
     @DeleteMapping("/{operationId}/surgeons")
