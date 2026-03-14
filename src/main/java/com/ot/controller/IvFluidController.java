@@ -45,7 +45,7 @@ public class IvFluidController {
 	            ivFluidService.getIVFluids(operationId)));
 	}
 
-	@DeleteMapping("/{operationId}/remove/{fluidId}")
+	@DeleteMapping("/{operationId}/remove/fluid/{fluidId}")
 	public ResponseEntity<ApiResponse<Void>> removeIVFluid(
 	        @PathVariable Long operationId,
 	        @PathVariable Long fluidId) {
@@ -54,7 +54,7 @@ public class IvFluidController {
 	    return ResponseEntity.ok(ApiResponse.success("IV fluid removed successfully", null));
 	}
 	
-	@PatchMapping("/{operationId}/update/{fluidId}")
+	@PatchMapping("/{operationId}/update/fluid/{fluidId}")
 	public ResponseEntity<ApiResponse<IVFluidResponse>> updateIVFluid(
 	        @PathVariable Long operationId,
 	        @PathVariable Long fluidId,
@@ -64,7 +64,7 @@ public class IvFluidController {
 	            ivFluidService.updateIVFluid(operationId, fluidId, request)));
 	}
 
-	@PatchMapping("/{operationId}/{fluidId}/complete")
+	@PatchMapping("/{operationId}/fluid/{fluidId}/complete")
 	public ResponseEntity<ApiResponse<IVFluidResponse>> completeIVFluid(
 	        @PathVariable Long operationId,
 	        @PathVariable Long fluidId) {

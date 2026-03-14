@@ -137,7 +137,7 @@ public class PreOpServiceImpl implements PreOpService {
         return PreOpMapper.toResponse(operation.getPreOp());
     }
 
-    // ---------------------------------------- Update ---------------------------------------- //
+    // ---------------------------------------- Update All ---------------------------------------- //
 
     @Transactional
     @Override
@@ -203,7 +203,7 @@ public class PreOpServiceImpl implements PreOpService {
         return PreOpMapper.toResponse(preOp);
     }
     
-    
+    // ---------------------------------------- Update Pre-Op Status ---------------------------------------- //
     @Transactional
     @Override
     public PreOpAssessmentResponse updatePreOpStatus(Long operationId, PreOpStatusUpdateRequest request) {
