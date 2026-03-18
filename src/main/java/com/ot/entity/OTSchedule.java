@@ -2,9 +2,7 @@ package com.ot.entity;
 
 import lombok.*;
 import java.time.LocalDateTime;
-
 import com.ot.enums.ScheduleType;
-
 import jakarta.persistence.*;
 
 @Entity

@@ -4,9 +4,10 @@ import java.util.List;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import com.ot.dto.otRoomRequest.OTRoomCreateRequest;
-import com.ot.dto.otRoomRequest.UpdateRoomStatusRequest;
-import com.ot.dto.otRoomResponse.OTRoomResponse;
+
+import com.ot.dto.otRoom.OTRoomCreateRequest;
+import com.ot.dto.otRoom.OTRoomResponse;
+import com.ot.dto.otRoom.UpdateRoomStatusRequest;
 import com.ot.entity.Hospital;
 import com.ot.entity.OTRoom;
 import com.ot.entity.OperationTheater;
@@ -50,7 +51,7 @@ public class OTRoomServiceImpl implements OTRoomService {
 
         OperationTheater theater = theaterRepository
                 .findById(request.getOperationTheaterId())
-                .orElseThrow(() -> new RuntimeException("Operation Theater not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Operation Theater not found"));
 
         //Check if the OperationTheater Hospital Id and Admin's Hospital Id Match!
         if(!theater.getHospital().getId().equals(hospital.getId())) {

@@ -4,8 +4,8 @@ import java.util.Set;
 
 import com.ot.dto.staffRequest.StaffAssignmentRequest;
 import com.ot.dto.staffRequest.StaffUnAssignRequest;
-import com.ot.dto.surgeonRequest.SurgeonAssignmentRequest;
-import com.ot.dto.surgeonRequest.UnAssignSurgeonRequest;
+import com.ot.dto.surgeonAssignment.SurgeonAssignmentRequest;
+import com.ot.dto.surgeonAssignment.UnAssignSurgeonRequest;
 import com.ot.embed.StaffAssignment;
 import com.ot.embed.SurgeonAssignment;
 

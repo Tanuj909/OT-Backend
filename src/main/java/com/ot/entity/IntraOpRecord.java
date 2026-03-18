@@ -51,6 +51,9 @@ public class IntraOpRecord {
     @OneToMany(mappedBy = "intraOpRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<IVFluidRecord> ivFluids = new ArrayList<>();
     
+    @OneToMany(mappedBy = "intraOp", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<AnesthesiaDrug> anesthesiaDrugs = new ArrayList<>();
+    
     private String urineOutput;
     private String drainOutput;
     

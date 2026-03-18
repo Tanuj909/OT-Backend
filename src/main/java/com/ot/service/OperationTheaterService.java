@@ -2,8 +2,8 @@ package com.ot.service;
 
 import java.util.List;
 
-import com.ot.dto.operationtheaterRequest.OperationTheaterCreateRequest;
-import com.ot.dto.operationtheaterResponse.OperationTheaterResponse;
+import com.ot.dto.operationtheater.OperationTheaterCreateRequest;
+import com.ot.dto.operationtheater.OperationTheaterResponse;
 
 
 public interface OperationTheaterService {

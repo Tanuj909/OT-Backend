@@ -94,6 +94,9 @@ public class ScheduledOperation {
     @OneToMany(mappedBy = "scheduledOperation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<ConsumableUsage> consumables = new HashSet<>();
     
+    @OneToMany(mappedBy = "scheduledOperation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<ImplantUsed> implants = new HashSet<>();
+    
     @ElementCollection
     @CollectionTable(name = "operation_surgeons", 
                      joinColumns = @JoinColumn(name = "operation_id"))

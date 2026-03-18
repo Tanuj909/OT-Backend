@@ -1,6 +1,6 @@
 package com.ot.service;
 
-import com.ot.dto.scheduleOperationRequest.ScheduleOperationRequest;
+import com.ot.dto.scheduleOperation.ScheduleOperationRequest;
 
 public interface OperationSchedulingService {
 

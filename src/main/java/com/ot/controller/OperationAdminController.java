@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ot.dto.scheduleOperationRequest.ScheduleOperationRequest;
+import com.ot.dto.scheduleOperation.ScheduleOperationRequest;
 import com.ot.service.OperationSchedulingService;
 
 import lombok.RequiredArgsConstructor;

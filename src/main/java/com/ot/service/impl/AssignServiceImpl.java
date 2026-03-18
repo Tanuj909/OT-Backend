@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.ot.dto.staffRequest.StaffAssignmentDTO;
 import com.ot.dto.staffRequest.StaffAssignmentRequest;
-import com.ot.dto.surgeonRequest.SurgeonAssignmentDTO;
-import com.ot.dto.surgeonRequest.SurgeonAssignmentRequest;
-import com.ot.dto.surgeonRequest.UnAssignSurgeonRequest;
+import com.ot.dto.surgeonAssignment.SurgeonAssignmentDTO;
+import com.ot.dto.surgeonAssignment.SurgeonAssignmentRequest;
+import com.ot.dto.surgeonAssignment.UnAssignSurgeonRequest;
 import com.ot.embed.StaffAssignment;
 import com.ot.embed.SurgeonAssignment;
 import com.ot.entity.ScheduledOperation;

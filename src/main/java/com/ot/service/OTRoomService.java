@@ -2,9 +2,9 @@ package com.ot.service;
 
 import java.util.List;
 
-import com.ot.dto.otRoomRequest.OTRoomCreateRequest;
-import com.ot.dto.otRoomRequest.UpdateRoomStatusRequest;
-import com.ot.dto.otRoomResponse.OTRoomResponse;
+import com.ot.dto.otRoom.OTRoomCreateRequest;
+import com.ot.dto.otRoom.OTRoomResponse;
+import com.ot.dto.otRoom.UpdateRoomStatusRequest;
 
 
 public interface OTRoomService {

@@ -4,8 +4,9 @@ import java.util.List;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import com.ot.dto.operationtheaterRequest.OperationTheaterCreateRequest;
-import com.ot.dto.operationtheaterResponse.OperationTheaterResponse;
+
+import com.ot.dto.operationtheater.OperationTheaterCreateRequest;
+import com.ot.dto.operationtheater.OperationTheaterResponse;
 import com.ot.entity.Hospital;
 import com.ot.entity.OperationTheater;
 import com.ot.entity.User;

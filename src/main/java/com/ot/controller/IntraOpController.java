@@ -21,7 +21,7 @@ import com.ot.dto.response.ApiResponse;
 import com.ot.service.IntraOpService;
 
 @RestController
-@RequestMapping("/api/intr-op")
+@RequestMapping("/api/intra-op")
 public class IntraOpController {
 	
 	@Autowired private IntraOpService intraOpService;

@@ -1,6 +1,6 @@
 package com.ot.mapper;
 
-import com.ot.dto.preOpResponse.PreOpAssessmentResponse;
+import com.ot.dto.preOp.PreOpAssessmentResponse;
 import com.ot.entity.PreOpAssessment;
 
 public class PreOpMapper {

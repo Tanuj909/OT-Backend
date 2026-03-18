@@ -12,9 +12,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.ot.dto.otRoomRequest.OTRoomCreateRequest;
-import com.ot.dto.otRoomRequest.UpdateRoomStatusRequest;
-import com.ot.dto.otRoomResponse.OTRoomResponse;
+
+import com.ot.dto.otRoom.OTRoomCreateRequest;
+import com.ot.dto.otRoom.OTRoomResponse;
+import com.ot.dto.otRoom.UpdateRoomStatusRequest;
 import com.ot.service.OTRoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

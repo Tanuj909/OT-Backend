@@ -3,9 +3,10 @@ package com.ot.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.ot.dto.preOpRequest.PreOpAssessmentRequest;
-import com.ot.dto.preOpRequest.PreOpStatusUpdateRequest;
-import com.ot.dto.preOpResponse.PreOpAssessmentResponse;
+
+import com.ot.dto.preOp.PreOpAssessmentRequest;
+import com.ot.dto.preOp.PreOpAssessmentResponse;
+import com.ot.dto.preOp.PreOpStatusUpdateRequest;
 import com.ot.dto.response.ApiResponse;
 import com.ot.service.PreOpService;
 import lombok.RequiredArgsConstructor;
