@@ -2,10 +2,8 @@ package com.ot.entity;
 
 import lombok.*;
 import java.time.LocalDateTime;
-
 import com.ot.enums.AldreteScore;
 import com.ot.enums.RecoveryStatus;
-
 import jakarta.persistence.*;
 
 @Entity
@@ -56,6 +54,10 @@ public class PostOpRecord {
     
     @Enumerated(EnumType.STRING)
     private RecoveryStatus status;
+    
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "ward_id")
+//    private Ward ward;
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
