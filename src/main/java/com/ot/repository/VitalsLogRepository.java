@@ -21,4 +21,8 @@ public interface VitalsLogRepository extends JpaRepository<VitalsLog, Long> {
             ScheduledOperation operation, VitalsPhase phase, Boolean isStable);
 
     List<VitalsLog> findByScheduledOperation(ScheduledOperation operation);
+    
+    // IntraOp vitals
+    List<VitalsLog> findByScheduledOperationAndPhase(
+            ScheduledOperation operation, VitalsPhase phase);
 }

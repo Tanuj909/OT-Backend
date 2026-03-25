@@ -2,11 +2,13 @@ package com.ot.service.impl;
 
 
 import java.awt.Checkbox;
+import java.util.List;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.dto.scheduleOperation.OperationListResponse;
 import com.ot.dto.scheduleOperation.ScheduleOperationRequest;
 import com.ot.embed.StaffAssignment;
 import com.ot.embed.SurgeonAssignment;
@@ -24,6 +26,7 @@ import com.ot.exception.BadRequestException;
 import com.ot.exception.OperationNotAllowedException;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
+import com.ot.mapper.OperationMapper;
 import com.ot.repository.HospitalRepository;
 import com.ot.repository.OTRoomRepository;
 import com.ot.repository.OTScheduleRepository;
@@ -51,7 +54,57 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
         CustomUserDetails cud = (CustomUserDetails) auth.getPrincipal(); 
         return cud.getUser(); 
     }
+	
+	@Override
+	public List<OperationListResponse> getRequestedOperations() {
 
+	    User user = currentUser();
+
+	    List<ScheduledOperation> operations =
+	            operationRepository.findByHospitalIdAndStatus(
+	                    user.getHospital().getId(),
+	                    OperationStatus.REQUESTED
+	            );
+
+	    return operations.stream()
+	            .map(OperationMapper::toListResponse)
+	            .toList();
+	}
+
+	
+	@Override
+	public List<OperationListResponse> getAllOperations() {
+
+	    User user = currentUser();
+
+	    // 🔹 Best: DB level filtering (recommended)
+	    List<ScheduledOperation> operations =
+	            operationRepository.findByHospitalId(user.getHospital().getId());
+
+	    // 🔹 Mapping
+	    return operations.stream()
+	            .map(OperationMapper::toListResponse)
+	            .toList();
+	}
+	
+	@Override
+	public List<OperationListResponse> getOperationsByStatus(OperationStatus status) {
+
+	    User user = currentUser();
+
+	    // 🔹 DB level filtering (BEST PRACTICE)
+	    List<ScheduledOperation> operations =
+	            operationRepository.findByHospitalIdAndStatus(
+	                    user.getHospital().getId(),
+	                    status
+	            );
+
+	    // 🔹 Mapping
+	    return operations.stream()
+	            .map(OperationMapper::toListResponse)
+	            .toList();
+	}
+	
     @Transactional
     @Override
     public void schedule(Long operationId, ScheduleOperationRequest request) {

@@ -17,4 +17,8 @@ public interface OTRoomRepository extends JpaRepository<OTRoom, Long> {
     Optional<OTRoom> findByIdAndHospitalId(Long id, Long hospitalId);
     
     List<OTRoom> findByHospitalIdAndStatus(Long hospitalId, RoomStatus status);
+    
+    List<OTRoom> findByOperationTheaterIdAndOperationTheaterHospitalId(
+    	    Long operationTheaterId, Long hospitalId
+    	);
 }

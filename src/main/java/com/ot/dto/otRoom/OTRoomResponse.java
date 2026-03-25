@@ -30,6 +30,8 @@ public class OTRoomResponse {
     private Boolean hasSuction;
 
     private Boolean hasEmergencyPower;
+    
+    private Boolean isActive;
 
     private Integer capacity;
 

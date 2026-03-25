@@ -7,12 +7,15 @@ import org.springframework.stereotype.Service;
 
 import com.ot.dto.operationtheater.OperationTheaterCreateRequest;
 import com.ot.dto.operationtheater.OperationTheaterResponse;
+import com.ot.dto.otRoom.OTRoomResponse;
 import com.ot.entity.Hospital;
 import com.ot.entity.OperationTheater;
 import com.ot.entity.User;
 import com.ot.enums.RoleType;
 import com.ot.enums.TheaterStatus;
 import com.ot.exception.UnauthorizedException;
+import com.ot.mapper.OtRoomMapper;
+import com.ot.repository.OTRoomRepository;
 import com.ot.repository.OperationTheaterRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.OperationTheaterService;
@@ -23,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class OperationTheaterServiceImpl implements OperationTheaterService {
 
     private final OperationTheaterRepository repository;
+    private final OTRoomRepository otRoomRepository; // inject karo upar
     
 	public User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -119,6 +123,28 @@ public class OperationTheaterServiceImpl implements OperationTheaterService {
         repository.save(ot);
 
         return mapToResponse(ot);
+    }
+    
+    @Override
+    public List<OTRoomResponse> getRoomsByTheater(Long theaterId) {
+
+        User admin = currentUser();
+
+        if (admin.getRole() != RoleType.ADMIN) {
+            throw new UnauthorizedException("Only Admin can access OT Rooms!");
+        }
+
+        Hospital hospital = admin.getHospital();
+
+        // Theater verify - is hospital ka hai?
+        repository.findByIdAndHospitalId(theaterId, hospital.getId())
+                .orElseThrow(() -> new RuntimeException("Operation Theater not found!"));
+
+        return otRoomRepository
+                .findByOperationTheaterIdAndOperationTheaterHospitalId(theaterId, hospital.getId())
+                .stream()
+                .map(OtRoomMapper::mapRoomToResponse)
+                .toList();
     }
 
     @Override

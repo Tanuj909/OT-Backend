@@ -25,4 +25,10 @@ public class AuthController {
     	return ApiResponse.success("Login Successful", response);
     	
     }
+    
+//-------------------------------------Log Out(For All Users)--------------------------------//
+  	@PostMapping("/logout")
+  	public ApiResponse<Void> logout() {
+  	    return ApiResponse.success("Logged out successfully", null);
+  	}
 }

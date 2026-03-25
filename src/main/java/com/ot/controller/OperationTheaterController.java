@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ot.dto.operationtheater.OperationTheaterCreateRequest;
 import com.ot.dto.operationtheater.OperationTheaterResponse;
+import com.ot.dto.otRoom.OTRoomResponse;
 import com.ot.service.OperationTheaterService;
 
 import jakarta.validation.Valid;
@@ -51,6 +52,13 @@ public class OperationTheaterController {
             @Valid @RequestBody OperationTheaterCreateRequest request) {
 
         return ResponseEntity.ok(service.update(id, request));
+    }
+    
+    @GetMapping("/{theaterId}/rooms")
+    public ResponseEntity<List<OTRoomResponse>> getRoomsByTheater(
+            @PathVariable Long theaterId) {
+
+        return ResponseEntity.ok(service.getRoomsByTheater(theaterId));
     }
 
     @DeleteMapping("/{id}")

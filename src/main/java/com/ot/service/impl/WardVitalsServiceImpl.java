@@ -1,5 +1,34 @@
 package com.ot.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import com.ot.dto.wardVitals.WardVitalsRequest;
+import com.ot.dto.wardVitals.WardVitalsResponse;
+import com.ot.entity.PostOpRecord;
+import com.ot.entity.ScheduledOperation;
+import com.ot.entity.User;
+import com.ot.entity.VitalsLog;
+import com.ot.entity.Ward;
+import com.ot.enums.OperationStatus;
+import com.ot.enums.RecoveryStatus;
+import com.ot.enums.VitalsPhase;
+import com.ot.exception.ResourceNotFoundException;
+import com.ot.exception.UnauthorizedException;
+import com.ot.exception.ValidationException;
+import com.ot.repository.ScheduledOperationRepository;
+import com.ot.repository.VitalsLogRepository;
+import com.ot.security.CustomUserDetails;
+import com.ot.service.WardVitalsService;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class WardVitalsServiceImpl implements WardVitalsService {

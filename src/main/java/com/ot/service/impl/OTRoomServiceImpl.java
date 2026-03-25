@@ -163,6 +163,10 @@ public class OTRoomServiceImpl implements OTRoomService {
         room.setFloor(request.getFloor());
         room.setType(request.getType());
         room.setStatus(request.getStatus());
+        room.setHasEmergencyPower(request.getHasEmergencyPower());
+        room.setHasGasSupply(request.getHasGasSupply());
+        room.setHasHvac(request.getHasHvac());
+        room.setHasSuction(request.getHasSuction());
         room.setCapacity(request.getCapacity());
         room.setSpecialFeatures(request.getSpecialFeatures());
 
@@ -281,6 +285,7 @@ public class OTRoomServiceImpl implements OTRoomService {
                 .floor(room.getFloor())
                 .type(room.getType())
                 .status(room.getStatus())
+                .isActive(room.getIsActive())
                 .capacity(room.getCapacity())
                 .hasHvac(room.getHasHvac())
                 .hasGasSupply(room.getHasGasSupply())

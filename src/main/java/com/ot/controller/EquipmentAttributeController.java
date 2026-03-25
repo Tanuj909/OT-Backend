@@ -42,6 +42,17 @@ public class EquipmentAttributeController {
         return ResponseEntity.ok(ApiResponse.success("Attributes fetched successfully",
                 attributeService.getAttributes(equipmentId)));
     }
+    
+    @GetMapping("/{attributeId}")
+    public ResponseEntity<ApiResponse<EquipmentAttributeResponse>> getAttributeById(
+            @PathVariable Long attributeId) {
+        
+        EquipmentAttributeResponse response = attributeService.getAttributeById(attributeId);
+        
+        return ResponseEntity.ok(
+            ApiResponse.success("Attribute fetched successfully", response)
+        );
+    }
 
     @PutMapping("/{attributeId}")
     public ResponseEntity<ApiResponse<EquipmentAttributeResponse>> updateAttribute(

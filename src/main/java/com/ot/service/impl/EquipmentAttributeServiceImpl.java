@@ -12,12 +12,12 @@ import com.ot.entity.EquipmentAttribute;
 import com.ot.entity.User;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
+import com.ot.exception.ValidationException;
 import com.ot.repository.EquipmentAttributeRepository;
 import com.ot.repository.EquipmentRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.EquipmentAttributeService;
 import jakarta.transaction.Transactional;
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -93,6 +93,26 @@ public class EquipmentAttributeServiceImpl implements EquipmentAttributeService 
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
+    
+    // --------------------------------------- Get By ID --------------------------------------- //
+    @Override
+    public EquipmentAttributeResponse getAttributeById(Long attributeId) {
+        User currentUser = currentUser();
+
+        // Fetch attribute
+        EquipmentAttribute attribute = attributeRepository.findById(attributeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Attribute not found"));
+
+        // Get equipment from attribute
+        Equipment equipment = attribute.getEquipment();
+
+        // Check hospital access
+        if (!equipment.getHospital().getId().equals(currentUser.getHospital().getId())) {
+            throw new UnauthorizedException("You are not authorized to access this attribute");
+        }
+
+        return toResponse(attribute);
+    }
 
     // --------------------------------------- Update --------------------------------------- //
 
@@ -118,9 +138,9 @@ public class EquipmentAttributeServiceImpl implements EquipmentAttributeService 
         }
 
         // System attribute update nahi ho sakti
-        if (attribute.isSystem()) {
-            throw new ValidationException("System attributes cannot be updated");
-        }
+//        if (attribute.isSystem()) {
+//            throw new ValidationException("System attributes cannot be updated");
+//        }
 
         // Duplicate name check — apna hi naam ho toh skip
         if (request.getAttributeName() != null &&
@@ -132,7 +152,9 @@ public class EquipmentAttributeServiceImpl implements EquipmentAttributeService 
         if (request.getAttributeName() != null)  attribute.setAttributeName(request.getAttributeName());
         if (request.getAttributeValue() != null) attribute.setAttributeValue(request.getAttributeValue());
         if (request.getAttributeType() != null)  attribute.setAttributeType(request.getAttributeType());
-
+        attribute.setRequired(request.isRequired());
+        attribute.setSystem(request.isSystem());
+        
         attributeRepository.save(attribute);
 
         return toResponse(attribute);
@@ -161,9 +183,9 @@ public class EquipmentAttributeServiceImpl implements EquipmentAttributeService 
         }
 
         // System attribute delete nahi ho sakti
-        if (attribute.isSystem()) {
-            throw new ValidationException("System attributes cannot be deleted");
-        }
+//        if (attribute.isSystem()) {
+//            throw new ValidationException("System attributes cannot be deleted");
+//        }
 
         attributeRepository.delete(attribute);
     }

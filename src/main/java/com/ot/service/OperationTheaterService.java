@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.ot.dto.operationtheater.OperationTheaterCreateRequest;
 import com.ot.dto.operationtheater.OperationTheaterResponse;
+import com.ot.dto.otRoom.OTRoomResponse;
 
 
 public interface OperationTheaterService {
@@ -17,4 +18,6 @@ public interface OperationTheaterService {
     OperationTheaterResponse update(Long id, OperationTheaterCreateRequest request);
 
     void delete(Long id);
+
+	List<OTRoomResponse> getRoomsByTheater(Long theaterId);
 }

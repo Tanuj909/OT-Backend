@@ -55,9 +55,9 @@ public class PostOpRecord {
     @Enumerated(EnumType.STRING)
     private RecoveryStatus status;
     
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "ward_id")
-//    private Ward ward;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ward_id")
+    private Ward ward;
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

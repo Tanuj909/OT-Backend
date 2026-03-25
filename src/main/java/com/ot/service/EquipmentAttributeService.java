@@ -10,4 +10,5 @@ public interface EquipmentAttributeService {
     List<EquipmentAttributeResponse> getAttributes(Long equipmentId);
     EquipmentAttributeResponse updateAttribute(Long equipmentId, Long attributeId, EquipmentAttributeRequest request);
     void deleteAttribute(Long equipmentId, Long attributeId);
+	EquipmentAttributeResponse getAttributeById(Long attributeId);
 }
