@@ -14,6 +14,7 @@ public interface OTItemCatalogRepository extends JpaRepository<OTItemCatalog, Lo
     List<OTItemCatalog> findByHospitalAndItemType(Hospital hospital, CatalogItemType itemType);
     List<OTItemCatalog> findByHospitalAndCategory(Hospital hospital, String category);
     List<OTItemCatalog> findByHospitalAndIsActive(Hospital hospital, Boolean isActive);
+    List<OTItemCatalog> findByHospital(Hospital hospital);
 
     // Combined filters
     List<OTItemCatalog> findByHospitalAndItemTypeAndCategoryAndIsActive(

@@ -28,6 +28,18 @@ public class PreOpAssessmentResponse {
     private String pastMedicalHistory;
     private String pastSurgicalHistory;
     private String physicalExamination;
+    
+ // 🔥 add these fields
+
+    private Boolean fitForSurgery;
+    private String clearanceRemarks;
+    private String airwayAssessment;
+    private Boolean consentTaken;
+    private Boolean highRisk;
+    private Boolean checklistCompleted;
+    private String approvedBy;
+    private LocalDateTime approvedAt;
+    private LocalDateTime validTill;
 
     private String ecgFindings;
     private String labResults;

@@ -118,8 +118,11 @@ public class OTItemCatalogServiceImpl implements OTItemCatalogService {
         }
 
         // No filter — sab return karo
-        return catalogRepository.findAll()
-                .stream().map(this::mapToResponse).collect(Collectors.toList());
+        return catalogRepository.findByHospital(hospital)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        
     }
 
     @Override
@@ -230,8 +233,8 @@ public class OTItemCatalogServiceImpl implements OTItemCatalogService {
         User currentUser = currentUser();
 
         // Sirf SUPER_ADMIN hard delete kar sakta hai
-        if (!currentUser.getRole().equals(RoleType.SUPER_ADMIN)) {
-            throw new ValidationException("Only super admin can permanently delete catalog items");
+        if (!currentUser.getRole().equals(RoleType.SUPER_ADMIN) && !currentUser.getRole().equals(RoleType.ADMIN) ) {
+            throw new ValidationException("Only Super_Admin & Admin can permanently delete catalog items");
         }
 
         OTItemCatalog item = catalogRepository.findById(itemId)

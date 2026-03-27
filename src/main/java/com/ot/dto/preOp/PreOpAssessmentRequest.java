@@ -24,6 +24,15 @@ public class PreOpAssessmentRequest {
     private String pastMedicalHistory;
     private String pastSurgicalHistory;
     private String physicalExamination;
+    
+ // 🔥 add these fields ONLY (बाकी same रहने दो)
+
+    private Boolean fitForSurgery;
+    private String clearanceRemarks;
+    private String airwayAssessment;
+    private Boolean consentTaken;
+    private Boolean highRisk;
+    private Boolean checklistCompleted;
 
     private String ecgFindings;
     private String labResults;

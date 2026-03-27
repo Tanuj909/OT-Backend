@@ -101,6 +101,12 @@ public class PreOpServiceImpl implements PreOpService {
                 .physicalExamination(request.getPhysicalExamination())
                 .ecgFindings(request.getEcgFindings())
                 .labResults(request.getLabResults())
+                .fitForSurgery(request.getFitForSurgery())
+                .clearanceRemarks(request.getClearanceRemarks())
+                .airwayAssessment(request.getAirwayAssessment())
+                .consentTaken(request.getConsentTaken())
+                .highRisk(request.getHighRisk())
+                .checklistCompleted(request.getChecklistCompleted())
                 .radiologyFindings(request.getRadiologyFindings())
                 .asaGrade(request.getAsaGrade())
                 .npoStatus(request.getNpoStatus())
@@ -195,6 +201,14 @@ public class PreOpServiceImpl implements PreOpService {
         if (request.getAnesthesiaPlan() != null)      preOp.setAnesthesiaPlan(request.getAnesthesiaPlan());
         if (request.getSpecialInstructions() != null) preOp.setSpecialInstructions(request.getSpecialInstructions());
         if (request.getStatus() != null)              preOp.setStatus(request.getStatus());
+        // 🔥 NEW FIELDS UPDATE
+        if (request.getFitForSurgery() != null)       preOp.setFitForSurgery(request.getFitForSurgery());
+        if (request.getClearanceRemarks() != null)    preOp.setClearanceRemarks(request.getClearanceRemarks());
+        if (request.getAirwayAssessment() != null)    preOp.setAirwayAssessment(request.getAirwayAssessment());
+        if (request.getConsentTaken() != null)        preOp.setConsentTaken(request.getConsentTaken());
+        if (request.getHighRisk() != null)            preOp.setHighRisk(request.getHighRisk());
+        if (request.getChecklistCompleted() != null)  preOp.setChecklistCompleted(request.getChecklistCompleted());
+
 
         preOp.setBmi(bmi);
 

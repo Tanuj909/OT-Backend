@@ -4,10 +4,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.ot.enums.SurgeryStatus;
 import com.ot.enums.VolumeUnit;
-
 import jakarta.persistence.*;
 
 @Entity

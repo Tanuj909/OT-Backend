@@ -2,10 +2,14 @@ package com.ot.controller;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.ot.dto.response.ApiResponse;
+import com.ot.dto.response.AvailableUserResponse;
 import com.ot.dto.staffRequest.StaffAssignmentRequest;
 import com.ot.dto.staffRequest.StaffUnAssignRequest;
 import com.ot.dto.surgeonAssignment.SurgeonAssignmentRequest;
@@ -40,6 +44,14 @@ public class AssignController {
         return ResponseEntity.ok(assignService.getAssignedStaff(operationId));
     }
     
+    // Get Available Staff
+    @GetMapping("/available/staff")
+    public ResponseEntity<ApiResponse<List<AvailableUserResponse>>> getAvailableStaff() {
+
+        return ResponseEntity.ok(ApiResponse.success("Available staff fetched successfully",
+        		assignService.getAvailableStaff()));
+    }
+    
     // UnAssign Staff
     @DeleteMapping("/{operationId}/staff")
     public ResponseEntity<String> unAssignStaff(
@@ -71,6 +83,15 @@ public class AssignController {
         return ResponseEntity.ok(assignService.getAssignedSurgeons(operationId));
     }
     
+    //Get Available Surgeons
+    @GetMapping("/available/surgeons")
+    public ResponseEntity<ApiResponse<List<AvailableUserResponse>>> getAvailableSurgeons() {
+
+        return ResponseEntity.ok(ApiResponse.success("Available surgeons fetched successfully",
+        		assignService.getAvailableSurgeons()));
+    }
+    
+    //Un-Assign Surgeon
     @DeleteMapping("/{operationId}/surgeons")
     public ResponseEntity<String> unAssignSurgeon(
             @PathVariable Long operationId,

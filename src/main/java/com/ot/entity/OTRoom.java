@@ -2,6 +2,7 @@ package com.ot.entity;
 
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import com.ot.enums.RoomStatus;
 import com.ot.enums.RoomType;
@@ -52,6 +53,14 @@ public class OTRoom {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "operation_theater_id", nullable = false)
     private OperationTheater operationTheater;
+    
+    @ManyToMany
+    @JoinTable(
+        name = "ot_room_feature_mapping",
+        joinColumns = @JoinColumn(name = "room_id"),
+        inverseJoinColumns = @JoinColumn(name = "feature_id")
+    )
+    private Set<OTRoomFeature> features;
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

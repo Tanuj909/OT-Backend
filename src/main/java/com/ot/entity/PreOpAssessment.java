@@ -25,7 +25,7 @@ public class PreOpAssessment {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hospital_id", nullable = false)
-    private Hospital hospital;  // 👈 NEW FIELD
+    private Hospital hospital;
     
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "operation_id")
@@ -69,12 +69,34 @@ public class PreOpAssessment {
     private String anesthesiaPlan;
     
     private String specialInstructions;
- // PreOpAssessment entity mein add karo
+
     private String statusChangeReason;
     
     @Enumerated(EnumType.STRING)
     private AssessmentStatus status;
-    
+
+    // 🔥 NEW FIELDS (Added)
+    private Boolean fitForSurgery;
+
+    @Column(length = 1000)
+    private String clearanceRemarks;
+
+    @Column(length = 500)
+    private String airwayAssessment;
+
+    private Boolean consentTaken;
+
+    private Boolean highRisk;
+
+    private Boolean checklistCompleted;
+
+    private String approvedBy;
+
+    private LocalDateTime approvedAt;
+
+    private LocalDateTime validTill;
+
+    // Audit
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;

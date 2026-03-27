@@ -32,6 +32,12 @@ public class PreOpMapper {
 	            .createdAt(preOp.getCreatedAt())
 	            .updatedAt(preOp.getUpdatedAt())
 	            .createdBy(preOp.getCreatedBy())
+	            .fitForSurgery(preOp.getFitForSurgery())
+                .clearanceRemarks(preOp.getClearanceRemarks())
+                .airwayAssessment(preOp.getAirwayAssessment())
+                .consentTaken(preOp.getConsentTaken())
+                .highRisk(preOp.getHighRisk())
+                .checklistCompleted(preOp.getChecklistCompleted())
 	            .build();
 	}
 }

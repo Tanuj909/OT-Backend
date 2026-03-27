@@ -1,7 +1,9 @@
 package com.ot.service;
 
+import java.util.List;
 import java.util.Set;
 
+import com.ot.dto.response.AvailableUserResponse;
 import com.ot.dto.staffRequest.StaffAssignmentRequest;
 import com.ot.dto.staffRequest.StaffUnAssignRequest;
 import com.ot.dto.surgeonAssignment.SurgeonAssignmentRequest;
@@ -22,5 +24,9 @@ public interface AssignService {
 	Set<StaffAssignment> getAssignedStaff(Long operationId);
 
 	Set<SurgeonAssignment> getAssignedSurgeons(Long operationId);
+
+	List<AvailableUserResponse> getAvailableSurgeons();
+
+	List<AvailableUserResponse> getAvailableStaff();
 
 }

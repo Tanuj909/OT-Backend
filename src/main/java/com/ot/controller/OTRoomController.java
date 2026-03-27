@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ot.dto.otRoom.FeatureMappingRequest;
 import com.ot.dto.otRoom.OTRoomCreateRequest;
 import com.ot.dto.otRoom.OTRoomResponse;
 import com.ot.dto.otRoom.UpdateRoomStatusRequest;
@@ -38,6 +39,28 @@ public class OTRoomController {
     public ResponseEntity<List<OTRoomResponse>> getAll() {
 
         return ResponseEntity.ok(service.getAll());
+    }
+    
+ // ✅ Map Features
+    @PostMapping("/{roomId}/features")
+    public ResponseEntity<?> mapFeatures(@PathVariable Long roomId,
+                                         @RequestBody FeatureMappingRequest request) {
+        service.mapFeatures(roomId, request);
+        return ResponseEntity.ok("Features mapped successfully");
+    }
+
+    // ✅ Unmap Features
+    @DeleteMapping("/{roomId}/features")
+    public ResponseEntity<?> unmapFeatures(@PathVariable Long roomId,
+                                           @RequestBody FeatureMappingRequest request) {
+        service.unmapFeatures(roomId, request);
+        return ResponseEntity.ok("Features unmapped successfully");
+    }
+
+    // ✅ Get Room Features
+    @GetMapping("/{roomId}/features")
+    public ResponseEntity<?> getRoomFeatures(@PathVariable Long roomId) {
+        return ResponseEntity.ok(service.getRoomFeatures(roomId));
     }
 
     @GetMapping("/theater/{id}")

@@ -1,10 +1,15 @@
 package com.ot.service.impl;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.dto.response.AvailableUserResponse;
 import com.ot.dto.staffRequest.StaffAssignmentDTO;
 import com.ot.dto.staffRequest.StaffAssignmentRequest;
 import com.ot.dto.surgeonAssignment.SurgeonAssignmentDTO;
@@ -13,11 +18,15 @@ import com.ot.dto.surgeonAssignment.UnAssignSurgeonRequest;
 import com.ot.embed.StaffAssignment;
 import com.ot.embed.SurgeonAssignment;
 import com.ot.entity.ScheduledOperation;
+import com.ot.entity.User;
 import com.ot.enums.OperationStatus;
+import com.ot.enums.RoleType;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.ValidationException;
+import com.ot.mapper.AvailableUserMapper;
 import com.ot.repository.ScheduledOperationRepository;
 import com.ot.repository.UserRepository;
+import com.ot.security.CustomUserDetails;
 import com.ot.service.AssignService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +37,14 @@ public class AssignServiceImpl implements AssignService {
 	
 	private final UserRepository userRepository;
 	private final ScheduledOperationRepository operationRepository;
+	
+    private User currentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new IllegalStateException("No user is logged in");
+        }
+        return ((CustomUserDetails) auth.getPrincipal()).getUser();
+    }
 	
 	
 //-------------------------------------Assign Staff to Schedule Operations----------------------------------//
@@ -89,7 +106,7 @@ public class AssignServiceImpl implements AssignService {
 	}
 	
 	
-//-------------------------------------Get Staff of Schedule Operations----------------------------------//
+//-------------------------------------Get Available Staff----------------------------------//
 	@Override
 	public Set<StaffAssignment> getAssignedStaff(Long operationId) {
 
@@ -99,7 +116,35 @@ public class AssignServiceImpl implements AssignService {
 	    return operation.getSupportingStaff();
 	}
 	
-	
+//-------------------------------------Get Surgeon of Schedule Operations----------------------------------//
+	@Override
+    public List<AvailableUserResponse> getAvailableStaff() {
+
+        User currentUser = currentUser();
+        Long hospitalId = currentUser.getHospital().getId();
+
+        // ✅ Staff roles
+        Set<String> staffRoles = Set.of(
+                RoleType.SCRUB_NURSE.name(),
+                RoleType.CIRCULATING_NURSE.name(),
+                RoleType.ANESTHESIA_NURSE.name(),
+                RoleType.OT_TECHNICIAN.name(),
+                RoleType.SURGICAL_TECH.name(),
+                RoleType.ANESTHESIA_TECHNICIAN.name(),
+                RoleType.ORDERLY.name(),
+                RoleType.OT_ASSISTANT.name(),
+                RoleType.ANESTHESIOLOGIST.name()
+        );
+
+        // 🔍 Debug (optional but recommended)
+        System.out.println("HospitalId: " + hospitalId);
+        System.out.println("Roles: " + staffRoles);
+
+        return userRepository.findAvailableStaff(hospitalId, staffRoles)
+                .stream()
+                .map(AvailableUserMapper::mapToResponse)
+                .toList();
+    }
 	
 //-------------------------------------Un-Assign Staff From Schedule Operations----------------------------------//
 	@Transactional
@@ -226,6 +271,30 @@ public class AssignServiceImpl implements AssignService {
 
 	    return operation.getSupportingSurgeons();
 	}
+
+//-------------------------------------Get Staff of Schedule Operations----------------------------------//	
+	 @Override
+	    public List<AvailableUserResponse> getAvailableSurgeons() {
+
+	        User currentUser = currentUser();
+	        Long hospitalId = currentUser.getHospital().getId();
+
+	        // ✅ Surgeon roles
+	        Set<String> surgeonRoles = Set.of(
+	                RoleType.SURGEON.name(),
+	                RoleType.RESIDENT.name()
+	        );
+
+	        // 🔍 Debug (optional)
+	        System.out.println("HospitalId: " + hospitalId);
+	        System.out.println("Surgeon Roles: " + surgeonRoles);
+
+	        return userRepository.findAvailableSurgeons(hospitalId, surgeonRoles)
+	                .stream()
+	                .map(AvailableUserMapper::mapToResponse)
+	                .toList();
+	    }
+
 	
 //-------------------------------------Un-Assign Surgeon From Schedule Operations----------------------------------//
 	@Transactional

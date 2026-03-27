@@ -1,9 +1,8 @@
 package com.ot.service.impl;
 
-
-import java.awt.Checkbox;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -22,10 +21,11 @@ import com.ot.enums.RoomStatus;
 import com.ot.enums.ScheduleType;
 import com.ot.enums.StaffRole;
 import com.ot.enums.SurgeonRole;
+import com.ot.exception.ApiException;
 import com.ot.exception.BadRequestException;
-import com.ot.exception.OperationNotAllowedException;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
+import com.ot.exception.ValidationException;
 import com.ot.mapper.OperationMapper;
 import com.ot.repository.HospitalRepository;
 import com.ot.repository.OTRoomRepository;
@@ -34,7 +34,6 @@ import com.ot.repository.ScheduledOperationRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.OperationSchedulingService;
 import jakarta.transaction.Transactional;
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -143,8 +142,8 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
         }
         
         // room active validation
-        if (!room.getIsActive()) {
-            throw new OperationNotAllowedException("Room is inactive");
+        if (!Boolean.TRUE.equals(room.getIsActive())) {
+            throw new ApiException("Room is inactive", HttpStatus.CONFLICT);
         }
         
         // time validation

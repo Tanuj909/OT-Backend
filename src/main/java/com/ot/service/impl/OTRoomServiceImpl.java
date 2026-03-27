@@ -1,25 +1,35 @@
 package com.ot.service.impl;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.dto.otRoom.FeatureMappingRequest;
 import com.ot.dto.otRoom.OTRoomCreateRequest;
+import com.ot.dto.otRoom.OTRoomFeatureResponse;
 import com.ot.dto.otRoom.OTRoomResponse;
 import com.ot.dto.otRoom.UpdateRoomStatusRequest;
 import com.ot.entity.Hospital;
 import com.ot.entity.OTRoom;
+import com.ot.entity.OTRoomFeature;
 import com.ot.entity.OperationTheater;
 import com.ot.entity.User;
 import com.ot.enums.RoleType;
 import com.ot.enums.RoomStatus;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
+import com.ot.mapper.OTRoomFeatureMapper;
+import com.ot.repository.OTRoomFeatureRepository;
 import com.ot.repository.OTRoomRepository;
 import com.ot.repository.OperationTheaterRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.OTRoomService;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -28,6 +38,8 @@ public class OTRoomServiceImpl implements OTRoomService {
 
     private final OTRoomRepository roomRepository;
     private final OperationTheaterRepository theaterRepository;
+    private final OTRoomFeatureRepository featureRepository;
+    private final OTRoomFeatureMapper featureMapper;
     
 	public User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -94,6 +106,57 @@ public class OTRoomServiceImpl implements OTRoomService {
         return roomRepository.findByHospitalId(hospital.getId())
                 .stream()
                 .map(this::map)
+                .toList();
+    }
+    
+    @Override
+    @Transactional
+    public void mapFeatures(Long roomId, FeatureMappingRequest request) {
+
+        OTRoom room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+
+        Set<OTRoomFeature> features = new HashSet<>(
+                featureRepository.findAllById(request.getFeatureIds())
+        );
+
+        // existing features preserve + add new
+        if (room.getFeatures() == null) {
+            room.setFeatures(features);
+        } else {
+            room.getFeatures().addAll(features);
+        }
+
+        roomRepository.save(room);
+    }
+    
+    @Override
+    @Transactional
+    public void unmapFeatures(Long roomId, FeatureMappingRequest request) {
+
+        OTRoom room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+
+        Set<OTRoomFeature> featuresToRemove = new HashSet<>(
+                featureRepository.findAllById(request.getFeatureIds())
+        );
+
+        if (room.getFeatures() != null) {
+            room.getFeatures().removeAll(featuresToRemove);
+        }
+
+        roomRepository.save(room);
+    }
+    
+    @Override
+    public List<OTRoomFeatureResponse> getRoomFeatures(Long roomId) {
+
+        OTRoom room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+
+        return room.getFeatures()
+                .stream()
+                .map(featureMapper::toResponse)
                 .toList();
     }
 
