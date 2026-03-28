@@ -77,6 +77,15 @@ public class OTRoomFeatureServiceImpl implements OTRoomFeatureService {
         feature.setIsActive(false); // soft delete
         repository.save(feature);
     }
+    
+    @Override
+    public void hardDelete(Long id) {
+    	
+        OTRoomFeature feature = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Feature not found"));
+        
+        repository.deleteById(id);
+    }
 
     @Override
     public List<OTRoomFeatureResponse> bulkCreate(List<OTRoomFeatureRequest> requests) {

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.ot.dto.preOp.PreOpAssessmentRequest;
 import com.ot.dto.preOp.PreOpAssessmentResponse;
+import com.ot.dto.preOp.PreOpStatusResponse;
 import com.ot.dto.preOp.PreOpStatusUpdateRequest;
 import com.ot.dto.response.ApiResponse;
 import com.ot.service.PreOpService;
@@ -34,6 +35,17 @@ public class PreOpController {
 
         PreOpAssessmentResponse response = preOpService.getPreOpAssessment(operationId);
         return ResponseEntity.ok(ApiResponse.success("Pre-op assessment fetched successfully", response));
+    }
+    
+    @GetMapping("/{operationId}/pre-op/status")
+    public ResponseEntity<ApiResponse<PreOpStatusResponse>> getPreOpStatus(
+            @PathVariable Long operationId) {
+
+        PreOpStatusResponse response = preOpService.getPreOpStatus(operationId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Pre-op status fetched successfully", response)
+        );
     }
 
     @PutMapping("/{operationId}/pre-op")

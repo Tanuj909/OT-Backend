@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.ot.constants.OTRoleConstants;
 import com.ot.dto.preOp.PreOpAssessmentRequest;
 import com.ot.dto.preOp.PreOpAssessmentResponse;
+import com.ot.dto.preOp.PreOpStatusResponse;
 import com.ot.dto.preOp.PreOpStatusUpdateRequest;
 import com.ot.entity.PreOpAssessment;
 import com.ot.entity.ScheduledOperation;
@@ -141,6 +142,43 @@ public class PreOpServiceImpl implements PreOpService {
         }
 
         return PreOpMapper.toResponse(operation.getPreOp());
+    }
+    
+    
+   // ----------------------------------------- Get Pre-Op Status------------------------------------------ //
+    @Override
+    public PreOpStatusResponse getPreOpStatus(Long operationId) {
+
+        User currentUser = currentUser();
+
+        // 1. Operation fetch
+        ScheduledOperation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Operation not found"));
+
+        // 2. Same hospital check
+        if (!operation.getHospital().getId().equals(currentUser.getHospital().getId())) {
+            throw new ValidationException("You are not authorized to access this operation");
+        }
+
+        PreOpAssessment preOp = operation.getPreOp();
+
+        // 3. If not exists
+        if (preOp == null) {
+            return PreOpStatusResponse.builder()
+                    .operationId(operationId)
+                    .exists(false)
+                    .status(null)
+                    .reason(null)
+                    .build();
+        }
+
+        // 4. Return status
+        return PreOpStatusResponse.builder()
+                .operationId(operationId)
+                .exists(true)
+                .status(preOp.getStatus())
+                .reason(preOp.getStatusChangeReason())
+                .build();
     }
 
     // ---------------------------------------- Update All ---------------------------------------- //

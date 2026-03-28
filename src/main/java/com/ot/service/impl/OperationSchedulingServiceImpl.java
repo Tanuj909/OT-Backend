@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.ot.dto.scheduleOperation.OperationListResponse;
+import com.ot.dto.scheduleOperation.OperationStatusResponse;
 import com.ot.dto.scheduleOperation.ScheduleOperationRequest;
 import com.ot.embed.StaffAssignment;
 import com.ot.embed.SurgeonAssignment;
@@ -102,6 +103,38 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
 	    return operations.stream()
 	            .map(OperationMapper::toListResponse)
 	            .toList();
+	}
+	
+	
+	@Override
+	public OperationStatusResponse getOperationStatus(Long operationId) {
+
+	    User user = currentUser();
+
+	    ScheduledOperation operation = operationRepository.findById(operationId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Operation not found"));
+
+	    // Hospital check
+	    if (!operation.getHospital().getId().equals(user.getHospital().getId())) {
+	        throw new UnauthorizedException("You are not authorized to access this operation");
+	    }
+
+	    OperationStatus status = operation.getStatus();
+
+	    boolean isScheduled = status.equals(OperationStatus.SCHEDULED);
+	    boolean isStarted = status.equals(OperationStatus.IN_PROGRESS)
+	            || status.equals(OperationStatus.COMPLETED);
+	    boolean isCompleted = status.equals(OperationStatus.COMPLETED);
+
+	    return OperationStatusResponse.builder()
+	            .operationId(operation.getId())
+	            .status(status)
+	            .isScheduled(isScheduled)
+	            .isStarted(isStarted)
+	            .isCompleted(isCompleted)
+	            .scheduledStartTime(operation.getScheduledStartTime())
+	            .actualStartTime(operation.getActualStartTime())
+	            .build();
 	}
 	
     @Transactional

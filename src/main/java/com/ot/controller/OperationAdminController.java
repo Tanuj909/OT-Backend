@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ot.dto.scheduleOperation.OperationListResponse;
+import com.ot.dto.scheduleOperation.OperationStatusResponse;
 import com.ot.dto.scheduleOperation.ScheduleOperationRequest;
 import com.ot.enums.OperationStatus;
 import com.ot.service.OperationSchedulingService;
@@ -48,6 +49,17 @@ public class OperationAdminController {
 
         return ResponseEntity.ok(
                 schedulingService.getOperationsByStatus(status)
+        );
+    }
+    
+
+//---------------------------------------Get Operations Status---------------------------------------// 
+    @GetMapping("/{operationId}/status")
+    public ResponseEntity<OperationStatusResponse> getOperationStatus(
+            @PathVariable Long operationId) {
+
+        return ResponseEntity.ok(
+                schedulingService.getOperationStatus(operationId)
         );
     }
     

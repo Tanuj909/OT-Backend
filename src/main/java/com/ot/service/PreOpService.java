@@ -2,6 +2,7 @@ package com.ot.service;
 
 import com.ot.dto.preOp.PreOpAssessmentRequest;
 import com.ot.dto.preOp.PreOpAssessmentResponse;
+import com.ot.dto.preOp.PreOpStatusResponse;
 import com.ot.dto.preOp.PreOpStatusUpdateRequest;
 
 public interface PreOpService {
@@ -13,5 +14,7 @@ public interface PreOpService {
 	PreOpAssessmentResponse updatePreOpAssessment(Long operationId, PreOpAssessmentRequest request);
 
 	PreOpAssessmentResponse updatePreOpStatus(Long operationId, PreOpStatusUpdateRequest request);
+
+	PreOpStatusResponse getPreOpStatus(Long operationId);
 
 }

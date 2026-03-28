@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.ot.constants.OTRoleConstants;
 import com.ot.dto.surgeryResponse.SurgeryStartResponse;
+import com.ot.dto.surgeryResponse.SurgeryStatusResponse;
 import com.ot.embed.SurgeonAssignment;
 import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
@@ -114,6 +115,31 @@ public class SurgeryServiceImpl implements SurgeryService{
                 .actualStartTime(operation.getActualStartTime())
                 .startedBy(currentUser.getUserName())
                 .warnings(warnings.isEmpty() ? null : warnings)
+                .build();
+    }
+    
+    @Override
+    public SurgeryStatusResponse checkSurgeryStarted(Long operationId) {
+
+        User currentUser = currentUser();
+
+        // Fetch operation
+        ScheduledOperation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Operation not found"));
+
+        // Hospital check
+        if (!operation.getHospital().getId().equals(currentUser.getHospital().getId())) {
+            throw new UnauthorizedException("You are not authorized to access this operation");
+        }
+
+        boolean isStarted = operation.getStatus().equals(OperationStatus.IN_PROGRESS)
+                || operation.getStatus().equals(OperationStatus.COMPLETED);
+
+        return SurgeryStatusResponse.builder()
+                .operationId(operation.getId())
+                .isStarted(isStarted)
+                .status(operation.getStatus())
+                .actualStartTime(operation.getActualStartTime())
                 .build();
     }
 }

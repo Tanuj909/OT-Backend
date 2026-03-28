@@ -59,6 +59,12 @@ public class OTRoomFeatureController {
         service.delete(id);
         return ResponseEntity.ok("Feature deleted successfully");
     }
+    
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> hardDelete(@PathVariable Long id) {
+        service.hardDelete(id);
+        return ResponseEntity.ok("Feature deleted successfully");
+    }
 
     @PostMapping("/bulk")
     public ResponseEntity<?> bulkCreate(@RequestBody List<OTRoomFeatureRequest> requests) {

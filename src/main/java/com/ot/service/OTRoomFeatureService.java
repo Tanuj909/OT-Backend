@@ -23,4 +23,6 @@ public interface OTRoomFeatureService {
 
 	List<OTRoomFeatureResponse> getAllActive();
 
+	void hardDelete(Long id);
+
 }
