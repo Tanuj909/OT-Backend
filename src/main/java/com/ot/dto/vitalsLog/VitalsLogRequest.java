@@ -1,5 +1,7 @@
 package com.ot.dto.vitalsLog;
 
+import com.ot.enums.VitalsPhase;
+
 import lombok.Data;
 
 @Data
@@ -16,4 +18,6 @@ public class VitalsLogRequest {
     private String consciousness;
     private String sedationScore;
     private String additionalNotes;
+    private VitalsPhase phase;
+    private Boolean isStable;
 }

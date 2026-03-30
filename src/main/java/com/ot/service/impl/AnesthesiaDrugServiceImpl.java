@@ -92,6 +92,7 @@ public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
                 .administeredAt(request.getAdministeredAt() != null
                         ? request.getAdministeredAt()
                         : LocalDateTime.now())
+                .endTime(request.getEndTime())          // 👈 NEW
                 .administeredBy(currentUser.getUserName())
                 .notes(request.getNotes())
                 .build();
@@ -130,7 +131,7 @@ public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
 
         User currentUser = currentUser();
 
-        if (!currentUser.getRole().equals(RoleType.ANESTHESIOLOGIST)) {
+        if (!currentUser.getRole().equals(RoleType.ANESTHESIOLOGIST) && !currentUser.getRole().equals(RoleType.ADMIN)) {
             throw new ValidationException("Only anesthesiologist can update anesthesia drugs");
         }
 
@@ -150,6 +151,8 @@ public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
         if (request.getRoute() != null)            drug.setRoute(request.getRoute());
         if (request.getAdministeredAt() != null)   drug.setAdministeredAt(request.getAdministeredAt());
         if (request.getNotes() != null)            drug.setNotes(request.getNotes());
+     // updateDrug — partial update mein
+        if (request.getEndTime() != null) drug.setEndTime(request.getEndTime()); // 👈 NEW
 
         drugRepository.save(drug);
 

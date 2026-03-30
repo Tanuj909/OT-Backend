@@ -213,9 +213,6 @@ public class IntraOpServiceImpl implements IntraOpService{
 	    if (request.getStatus().equals(SurgeryStatus.ABORTED)) {
 	        operation.setStatus(OperationStatus.CANCELLED);
 	        operation.setActualEndTime(LocalDateTime.now());
-	    } else if (request.getStatus().equals(SurgeryStatus.COMPLETED)) {
-	        operation.setStatus(OperationStatus.COMPLETED);
-	        operation.setActualEndTime(LocalDateTime.now());
 	    }
 
 	    intraOpRepository.save(intraOp);

@@ -10,4 +10,5 @@ public interface UsedEquipmentService {
     List<UsedEquipmentResponse> getUsedEquipment(Long operationId);
     UsedEquipmentResponse updateUsedEquipment(Long operationId, Long usedEquipmentId, UsedEquipmentRequest request);
     void removeEquipmentFromOperation(Long operationId, Long usedEquipmentId);
+	UsedEquipmentResponse updateUsageDetails(Long operationId, Long usedEquipmentId, UsedEquipmentRequest request);
 }

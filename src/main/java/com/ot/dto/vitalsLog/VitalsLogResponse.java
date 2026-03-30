@@ -2,6 +2,8 @@ package com.ot.dto.vitalsLog;
 
 import java.time.LocalDateTime;
 
+import com.ot.enums.VitalsPhase;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,4 +27,6 @@ public class VitalsLogResponse {
     private String sedationScore;
     private String additionalNotes;
     private LocalDateTime createdAt;
+    private VitalsPhase phase;
+    private Boolean isStable;
 }

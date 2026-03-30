@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -40,6 +41,18 @@ public class UsedEquipmentController {
             @PathVariable Long operationId) {
         return ResponseEntity.ok(ApiResponse.success("Used equipment fetched successfully",
                 usedEquipmentService.getUsedEquipment(operationId)));
+    }
+    
+    @PatchMapping("/{usedEquipmentId}/usage")
+    public ResponseEntity<ApiResponse<UsedEquipmentResponse>> updateUsageDetails(
+            @PathVariable Long operationId,
+            @PathVariable Long usedEquipmentId,
+            @RequestBody UsedEquipmentRequest request) {
+
+        return ResponseEntity.ok(ApiResponse.success(
+                "Equipment usage updated successfully",
+                usedEquipmentService.updateUsageDetails(operationId, usedEquipmentId, request)
+        ));
     }
 
     @PutMapping("/{usedEquipmentId}")

@@ -16,6 +16,7 @@ public class AnesthesiaDrugMapper {
                 .route(drug.getRoute())
                 .drugType(drug.getDrugType())
                 .administeredAt(drug.getAdministeredAt())
+                .endTime(drug.getEndTime())
                 .administeredBy(drug.getAdministeredBy())
                 .notes(drug.getNotes())
                 .createdAt(drug.getCreatedAt())

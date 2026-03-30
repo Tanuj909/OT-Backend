@@ -18,14 +18,13 @@ import com.ot.enums.EquipmentStatus;
 import com.ot.enums.OperationStatus;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
+import com.ot.exception.ValidationException;
 import com.ot.repository.EquipmentRepository;
 import com.ot.repository.ScheduledOperationRepository;
 import com.ot.repository.UsedEquipmentRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.UsedEquipmentService;
-
 import jakarta.transaction.Transactional;
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -123,8 +122,54 @@ public class UsedEquipmentServiceImpl implements UsedEquipmentService {
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
+    
+    // ---------------------------------------- Update ---------------------------------------- //
+    @Transactional
+    @Override
+    public UsedEquipmentResponse updateUsageDetails(Long operationId, Long usedEquipmentId, UsedEquipmentRequest request) {
 
-    // --------------------------------------- Update --------------------------------------- //
+        User currentUser = currentUser();
+
+        ScheduledOperation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Operation not found"));
+
+        if (!operation.getHospital().getId().equals(currentUser.getHospital().getId())) {
+            throw new UnauthorizedException("You are not authorized to access this operation");
+        }
+
+        if (!operation.getStatus().equals(OperationStatus.IN_PROGRESS)) {
+            throw new ValidationException("Equipment can only be updated during IN_PROGRESS operations");
+        }
+
+        UsedEquipment usedEquipment = usedEquipmentRepository.findById(usedEquipmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Used equipment record not found"));
+
+        if (!usedEquipment.getScheduledOperation().getId().equals(operationId)) {
+            throw new ValidationException("Equipment record does not belong to this operation");
+        }
+
+        // ✅ Update fields (partial update safe)
+        if (request.getUsedFrom() != null) {
+            usedEquipment.setUsedFrom(request.getUsedFrom());
+        }
+
+        if (request.getUsedUntil() != null) {
+            usedEquipment.setUsedUntil(request.getUsedUntil());
+        }
+
+        if (request.getQuantityUsed() != null) {
+            usedEquipment.setQuantityUsed(request.getQuantityUsed());
+        }
+
+        // boolean ke liye null check nahi hota → always update
+        usedEquipment.setConsumable(request.isConsumable());
+
+        usedEquipmentRepository.save(usedEquipment);
+
+        return toResponse(usedEquipment);
+    }
+
+    // --------------------------------------- Update Used Till--------------------------------------- //
 
     @Transactional
     @Override

@@ -15,6 +15,7 @@ import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
 import com.ot.entity.VitalsLog;
 import com.ot.enums.OperationStatus;
+import com.ot.enums.VitalsPhase;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
 import com.ot.repository.ScheduledOperationRepository;
@@ -85,6 +86,8 @@ public class VitalsLogServiceImpl implements VitalsLogService {
                 .consciousness(request.getConsciousness())
                 .sedationScore(request.getSedationScore())
                 .additionalNotes(request.getAdditionalNotes())
+                .isStable(request.getIsStable())
+                .phase(request.getPhase())
                 .build();
 
         vitalsLogRepository.save(vitalsLog);
@@ -250,6 +253,8 @@ public class VitalsLogServiceImpl implements VitalsLogService {
                 .sedationScore(vitalsLog.getSedationScore())
                 .additionalNotes(vitalsLog.getAdditionalNotes())
                 .createdAt(vitalsLog.getCreatedAt())
+                .phase(vitalsLog.getPhase())
+                .isStable(vitalsLog.getIsStable())
                 .build();
     }
 }

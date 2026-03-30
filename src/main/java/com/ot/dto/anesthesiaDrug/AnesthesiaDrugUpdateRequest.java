@@ -10,5 +10,6 @@ public class AnesthesiaDrugUpdateRequest {
     private String doseUnit;
     private String route;
     private LocalDateTime administeredAt;
+    private LocalDateTime endTime;      // 👈 NEW
     private String notes;
 }

@@ -49,6 +49,7 @@ public class AnesthesiaDrug {
     private DrugType drugType;      // INDUCTION, MAINTENANCE, REVERSAL, ANALGESIC
 
     private LocalDateTime administeredAt;
+    private LocalDateTime endTime;   
     private String administeredBy;
 
     private String notes;

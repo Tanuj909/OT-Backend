@@ -14,5 +14,6 @@ public class AnesthesiaDrugRequest {
     private String route;
     private DrugType drugType;
     private LocalDateTime administeredAt;
+    private LocalDateTime endTime;      // 👈 NEW
     private String notes;
 }

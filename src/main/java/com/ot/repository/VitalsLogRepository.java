@@ -25,4 +25,8 @@ public interface VitalsLogRepository extends JpaRepository<VitalsLog, Long> {
     // IntraOp vitals
     List<VitalsLog> findByScheduledOperationAndPhase(
             ScheduledOperation operation, VitalsPhase phase);
+    
+    // VitalsLogRepository
+    Optional<VitalsLog> findTopByScheduledOperationAndPhaseOrderByRecordedTimeDesc(
+            ScheduledOperation operation, VitalsPhase phase);
 }
