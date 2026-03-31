@@ -1,12 +1,16 @@
 package com.ot.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.dto.scheduleOperation.AssignedOperationResponse;
 import com.ot.dto.scheduleOperation.OperationListResponse;
 import com.ot.dto.scheduleOperation.OperationStatusResponse;
 import com.ot.dto.scheduleOperation.ScheduleOperationRequest;
@@ -18,6 +22,7 @@ import com.ot.entity.OTSchedule;
 import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
 import com.ot.enums.OperationStatus;
+import com.ot.enums.RoleType;
 import com.ot.enums.RoomStatus;
 import com.ot.enums.ScheduleType;
 import com.ot.enums.StaffRole;
@@ -87,6 +92,49 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
 	            .toList();
 	}
 	
+//	For Staff
+	@Override
+	public List<AssignedOperationResponse> getMyAssignedOperations(List<String> statuses) {
+
+	    User currentUser = currentUser();
+	    Long userId = currentUser.getId();
+	    Long hospitalId = currentUser.getHospital().getId();
+
+	    // Default statuses — agar filter nahi diya
+	    List<String> effectiveStatuses = (statuses != null && !statuses.isEmpty())
+	            ? statuses
+	            : List.of(
+	                OperationStatus.SCHEDULED.name(),
+	                OperationStatus.IN_PROGRESS.name()
+	            );
+
+	    List<ScheduledOperation> operations = new ArrayList<>();
+
+	    // Role ke hisaab se query
+	    RoleType role = currentUser.getRole();
+
+	    if (Set.of(RoleType.SURGEON, RoleType.ANESTHESIOLOGIST).contains(role)) {
+	        // Surgeon table mein dhundho
+	        operations = operationRepository.findOperationsBySurgeonId(
+	                userId, hospitalId, effectiveStatuses);
+
+	        // Agar surgeon table mein nahi mila — staff table mein bhi check karo
+	        if (operations.isEmpty()) {
+	            operations = operationRepository.findOperationsByStaffId(
+	                    userId, hospitalId, effectiveStatuses);
+	        }
+
+	    } else {
+	        // Baaki sab staff table mein honge
+	        operations = operationRepository.findOperationsByStaffId(
+	                userId, hospitalId, effectiveStatuses);
+	    }
+
+	    return operations.stream()
+	            .map(op -> mapToAssignedResponse(op, userId, role))
+	            .collect(Collectors.toList());
+	}
+	
 	@Override
 	public List<OperationListResponse> getOperationsByStatus(OperationStatus status) {
 
@@ -134,6 +182,46 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
 	            .isCompleted(isCompleted)
 	            .scheduledStartTime(operation.getScheduledStartTime())
 	            .actualStartTime(operation.getActualStartTime())
+	            .build();
+	}
+	
+
+
+	private AssignedOperationResponse mapToAssignedResponse(
+	        ScheduledOperation op, Long userId, RoleType role) {
+
+	    // Primary surgeon
+	    String primarySurgeon = op.getSupportingSurgeons().stream()
+	            .filter(SurgeonAssignment::isPrimary)
+	            .map(SurgeonAssignment::getSurgeonName)
+	            .findFirst().orElse(null);
+
+	    // Is user ka assigned role
+	    String assignedRole = op.getSupportingSurgeons().stream()
+	            .filter(s -> s.getSurgeonId().equals(userId))
+	            .map(s -> s.getRole().name())
+	            .findFirst()
+	            .orElseGet(() -> op.getSupportingStaff().stream()
+	                    .filter(s -> s.getStaffId().equals(userId))
+	                    .map(s -> s.getRole().name())
+	                    .findFirst()
+	                    .orElse(role.name()));
+
+	    return AssignedOperationResponse.builder()
+	            .operationId(op.getId())
+	            .operationReference(op.getOperationReference())
+	            .patientName(op.getPatientName())
+	            .patientMrn(op.getPatientMrn())
+	            .procedureName(op.getProcedureName())
+	            .complexity(op.getComplexity())
+	            .status(op.getStatus())
+	            .scheduledStartTime(op.getScheduledStartTime())
+	            .scheduledEndTime(op.getScheduledEndTime())
+	            .actualStartTime(op.getActualStartTime())
+	            .roomNumber(op.getRoom() != null ? op.getRoom().getRoomNumber() : null)
+	            .roomName(op.getRoom() != null ? op.getRoom().getRoomName() : null)
+	            .primarySurgeon(primarySurgeon)
+	            .assignedRole(assignedRole)
 	            .build();
 	}
 	

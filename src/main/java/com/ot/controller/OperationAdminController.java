@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ot.dto.response.ApiResponse;
+import com.ot.dto.scheduleOperation.AssignedOperationResponse;
 import com.ot.dto.scheduleOperation.OperationListResponse;
 import com.ot.dto.scheduleOperation.OperationStatusResponse;
 import com.ot.dto.scheduleOperation.ScheduleOperationRequest;
@@ -41,6 +43,16 @@ public class OperationAdminController {
 
         return ResponseEntity.ok(schedulingService.getAllOperations());
     }
+    
+//---------------------------------------Get All Operations(My Operations)---------------------------------------//
+    @GetMapping("/my-operations")
+    public ResponseEntity<ApiResponse<List<AssignedOperationResponse>>> getMyAssignedOperations(
+            @RequestParam(required = false) List<String> statuses) {
+
+        return ResponseEntity.ok(ApiResponse.success("Assigned operations fetched successfully",
+        		schedulingService.getMyAssignedOperations(statuses)));
+    }
+
     
 //---------------------------------------Get Operations By Status---------------------------------------//    
     @GetMapping("/status/{status}")

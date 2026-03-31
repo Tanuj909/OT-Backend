@@ -2,6 +2,7 @@ package com.ot.service;
 
 import java.util.List;
 
+import com.ot.dto.scheduleOperation.AssignedOperationResponse;
 import com.ot.dto.scheduleOperation.OperationListResponse;
 import com.ot.dto.scheduleOperation.OperationStatusResponse;
 import com.ot.dto.scheduleOperation.ScheduleOperationRequest;
@@ -20,5 +21,8 @@ public interface OperationSchedulingService {
 	List<OperationListResponse> getRequestedOperations();
 
 	OperationStatusResponse getOperationStatus(Long operationId);
+
+	List<AssignedOperationResponse> getMyAssignedOperations(List<String> statuses);
+
 
 }
