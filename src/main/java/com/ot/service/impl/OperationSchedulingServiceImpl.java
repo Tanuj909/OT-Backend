@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.billing.service.OTBillingIntegrationService;
 import com.ot.dto.scheduleOperation.AssignedOperationResponse;
 import com.ot.dto.scheduleOperation.OperationListResponse;
 import com.ot.dto.scheduleOperation.OperationStatusResponse;
@@ -50,6 +52,9 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
     private final OTRoomRepository roomRepository;
     private final OTScheduleRepository scheduleRepository;
     private final HospitalRepository hospitalRepository;
+    
+    @Autowired
+    private OTBillingIntegrationService billingIntegrationService;
     
 	public User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -331,5 +336,8 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
                 .build();
 
         scheduleRepository.save(schedule);
+        
+        // 👇 Billing trigger — last mein
+        billingIntegrationService.createBillingMaster(operation);
     }
 }

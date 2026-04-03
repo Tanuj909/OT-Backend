@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 @Data
 public class IpdOtRequest {
 
-    private String patientId;
+    private Long patientId;
 
     private String patientName;
 

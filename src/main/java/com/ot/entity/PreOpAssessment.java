@@ -31,7 +31,7 @@ public class PreOpAssessment {
     @JoinColumn(name = "operation_id")
     private ScheduledOperation scheduledOperation;
     
-    private String patientId;
+    private Long patientId;
     private LocalDateTime assessmentDate;
     private String assessedBy;
     

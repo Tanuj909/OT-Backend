@@ -32,7 +32,8 @@ public class ScheduledOperation {
     @Column(nullable = false)
     private String operationReference;  // Removed unique - now unique per hospital
     
-    private String patientId;
+//    private String patientId;
+    private Long patientId;
     private String patientName;
     private String patientMrn;
     private String ipdAdmissionId;

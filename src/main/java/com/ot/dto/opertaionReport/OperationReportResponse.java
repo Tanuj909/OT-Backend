@@ -23,7 +23,7 @@ import lombok.Data;
 public class OperationReportResponse {
 
     // ==================== Patient Info ==================== //
-    private String patientId;
+    private Long patientId;
     private String patientName;
     private String patientMrn;
     private String ipdAdmissionId;

@@ -14,7 +14,7 @@ public class PreOpAssessmentResponse {
 
     private Long id;
     private Long operationId;
-    private String patientId;
+    private Long patientId;
     private LocalDateTime assessmentDate;
     private String assessedBy;
 
