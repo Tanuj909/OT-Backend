@@ -32,6 +32,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/**").permitAll()
+                // ✅ ADD THIS LINE
+                .requestMatchers(HttpMethod.POST, "/api/super-admin/register").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
@@ -58,6 +60,7 @@ public class SecurityConfig {
                 "http://147.93.28.8:4005",
                 "http://147.93.28.8:4006",
                 "http://147.93.28.8:4007",
+                "http://147.93.28.8:4010",
                 "http://127.0.0.1:5500"
         ));
  
