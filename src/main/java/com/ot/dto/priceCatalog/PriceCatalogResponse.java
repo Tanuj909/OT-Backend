@@ -17,11 +17,11 @@ public class PriceCatalogResponse {
     private String itemName;
     private CatalogItemType itemType;
     private String hsnCode;
-    private BigDecimal basePrice;
-    private BigDecimal discountPercent;
+    private Double basePrice;
+    private Double discountPercent;
     private BigDecimal discountAmount;
     private BigDecimal priceAfterDiscount;
-    private BigDecimal gstPercent;
+    private Double gstPercent;
     private BigDecimal gstAmount;
     private BigDecimal totalPrice;
     private Boolean isActive;

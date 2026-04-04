@@ -9,12 +9,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.billing.service.OTBillingIntegrationService;
+import com.ot.dto.billing.OTItemBillingRequest;
 import com.ot.dto.consumableUsage.ConsumableSummaryResponse;
 import com.ot.dto.consumableUsage.ConsumableUsageRequest;
 import com.ot.dto.consumableUsage.ConsumableUsageResponse;
 import com.ot.entity.ConsumableUsage;
 import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
+import com.ot.enums.CatalogItemType;
 import com.ot.enums.OperationStatus;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
@@ -33,6 +36,7 @@ public class ConsumableUsageServiceImpl implements ConsumableUsageService {
 
     private final ConsumableUsageRepository consumableRepository;
     private final ScheduledOperationRepository operationRepository;
+    private final OTBillingIntegrationService billingIntegrationService;
 
     private User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -94,6 +98,23 @@ public class ConsumableUsageServiceImpl implements ConsumableUsageService {
                 .build();
 
         consumableRepository.save(consumable);
+        
+        if (operation.getBillingMasterId() == null) {
+            throw new ValidationException("Billing not initialized for this operation");
+        }
+        
+        OTItemBillingRequest billingRequest = new OTItemBillingRequest();
+        billingRequest.setOperationExternalId(operation.getId());
+        billingRequest.setItemExternalId(null); // optional
+        billingRequest.setItemName(request.getConsumableName());
+        billingRequest.setItemCode(request.getConsumableCode());
+        billingRequest.setItemType(CatalogItemType.CONSUMABLE);
+        billingRequest.setQuantity(request.getQuantityUsed());
+        billingRequest.setUnitPrice(request.getUnitPrice());
+        billingRequest.setDiscountPercent(request.getDiscountPercent());
+        billingRequest.setGstPercent(request.getGstPercent());
+
+        billingIntegrationService.addItemToBilling(billingRequest);
 
         return mapToResponse(consumable);
     }

@@ -7,8 +7,8 @@ import lombok.Data;
 @Data
 public class PriceCatalogUpdateRequest {
     private String hsnCode;
-    private BigDecimal basePrice;
-    private BigDecimal discountPercent;
-    private BigDecimal gstPercent;
+    private Double basePrice;
+    private Double discountPercent;
+    private Double gstPercent;
     private Boolean isActive;
 }

@@ -7,11 +7,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.billing.service.OTBillingIntegrationService;
+import com.ot.dto.billing.OTItemBillingRequest;
 import com.ot.dto.implantUsed.ImplantUsedRequest;
 import com.ot.dto.implantUsed.ImplantUsedResponse;
 import com.ot.dto.implantUsed.ImplantUsedUpdateRequest;
 import com.ot.entity.ImplantUsed;
 import com.ot.entity.OTItemCatalog;
+import com.ot.entity.PriceCatalog;
 import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
 import com.ot.enums.CatalogItemType;
@@ -21,6 +24,7 @@ import com.ot.exception.UnauthorizedException;
 import com.ot.exception.ValidationException;
 import com.ot.repository.ImplantUsedRepository;
 import com.ot.repository.OTItemCatalogRepository;
+import com.ot.repository.PriceCatalogRepository;
 import com.ot.repository.ScheduledOperationRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.ImplantUsedService;
@@ -35,6 +39,8 @@ public class ImplantUsedServiceImpl implements ImplantUsedService {
     private final ImplantUsedRepository implantUsedRepository;
     private final ScheduledOperationRepository operationRepository;
     private final OTItemCatalogRepository catalogRepository;
+    private final OTBillingIntegrationService billingIntegrationService;
+    private final PriceCatalogRepository priceCatalogRepository;
 
     private User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -77,6 +83,11 @@ public class ImplantUsedServiceImpl implements ImplantUsedService {
         if (!catalogItem.getIsActive()) {
             throw new ValidationException("Selected catalog item is inactive");
         }
+        
+        //Catalog Price
+        PriceCatalog price = priceCatalogRepository
+                .findByCatalogItem(catalogItem)
+                .orElse(null);
 
         // 7. Build and save
         ImplantUsed implant = ImplantUsed.builder()
@@ -92,6 +103,23 @@ public class ImplantUsedServiceImpl implements ImplantUsedService {
                 .build();
 
         implantUsedRepository.save(implant);
+        
+        if (operation.getBillingMasterId() == null) {
+            throw new ValidationException("Billing not initialized for this operation");
+        }
+        
+        OTItemBillingRequest billingRequest = new OTItemBillingRequest();
+        billingRequest.setOperationExternalId(operation.getId());
+        billingRequest.setItemExternalId(null); // optional
+        billingRequest.setItemName(implant.getCatalogItem().getItemName());
+        billingRequest.setItemCode(implant.getCatalogItem().getItemCode());
+        billingRequest.setItemType(CatalogItemType.IMPLANT);
+        billingRequest.setQuantity(request.getQuantity());
+        billingRequest.setUnitPrice(price.getBasePrice());
+        billingRequest.setDiscountPercent(price.getDiscountPercent());
+        billingRequest.setGstPercent(price.getGstPercent());
+
+        billingIntegrationService.addItemToBilling(billingRequest);
 
         return mapToResponse(implant);
     }

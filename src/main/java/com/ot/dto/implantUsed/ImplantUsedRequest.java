@@ -10,4 +10,5 @@ public class ImplantUsedRequest {
     private Integer quantity;
     private String bodyLocation;
     private String notes;
+    
 }

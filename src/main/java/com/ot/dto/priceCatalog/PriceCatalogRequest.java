@@ -8,7 +8,7 @@ import lombok.Data;
 public class PriceCatalogRequest {
     private Long catalogItemId;
     private String hsnCode;
-    private BigDecimal basePrice;
-    private BigDecimal discountPercent;
-    private BigDecimal gstPercent;
+    private Double basePrice;
+    private Double discountPercent;
+    private Double gstPercent;
 }

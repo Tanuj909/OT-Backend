@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.billing.service.OTBillingIntegrationService;
 import com.ot.constants.OTRoleConstants;
 import com.ot.dto.surgeryResponse.SurgeryStartResponse;
 import com.ot.dto.surgeryResponse.SurgeryStatusResponse;
@@ -32,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class SurgeryServiceImpl implements SurgeryService{
 	
 	private final ScheduledOperationRepository operationRepository;
+	private final OTBillingIntegrationService billingIntegrationService;
 	
     // ---------------------------------------- Helper ---------------------------------------- //
 
@@ -101,6 +103,13 @@ public class SurgeryServiceImpl implements SurgeryService{
             warnings.add("Pre-op assessment is not completed, current status: " + operation.getPreOp().getStatus());
         }
 
+        
+        // ==================== BILLING CHECK ==================== //
+
+        if (operation.getBillingMasterId() == null) {
+            throw new ValidationException("Cannot start surgery — Billing not initialized");
+        }
+        
         // ==================== Start Surgery ==================== //
 
         operation.setStatus(OperationStatus.IN_PROGRESS);
@@ -108,6 +117,13 @@ public class SurgeryServiceImpl implements SurgeryService{
         operation.setUpdatedBy(currentUser.getUserName());
 
         operationRepository.save(operation);
+       
+     // ==================== CREATE BILLING DETAILS ==================== //
+
+        billingIntegrationService.createOTBillingDetails(
+                operation.getBillingMasterId(),
+                operation.getOperationReference()
+        );
 
         return SurgeryStartResponse.builder()
                 .operationId(operation.getId())

@@ -8,6 +8,7 @@ import lombok.Data;
 
 @Data
 public class AnesthesiaDrugRequest {
+    private Long catalogItemId; 
     private String drugName;
     private Double dose;
     private String doseUnit;

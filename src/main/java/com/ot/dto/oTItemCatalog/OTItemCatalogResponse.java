@@ -1,5 +1,6 @@
 package com.ot.dto.oTItemCatalog;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.ot.enums.CatalogItemType;
 import lombok.Builder;
@@ -19,6 +20,9 @@ public class OTItemCatalogResponse {
     private String description;
     private String unit;
     private Boolean isActive;
+    private Double basePrice;
+    private Double discountPercent;
+    private Double gstPercent;
     private String createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

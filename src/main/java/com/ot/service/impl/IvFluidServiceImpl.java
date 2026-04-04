@@ -8,20 +8,28 @@ import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import com.ot.billing.service.OTBillingIntegrationService;
+import com.ot.dto.billing.OTItemBillingRequest;
 import com.ot.dto.iVFluid.IVFluidRequest;
 import com.ot.dto.iVFluid.IVFluidResponse;
 import com.ot.dto.iVFluid.IVFluidSummaryResponse;
 import com.ot.dto.iVFluid.IVFluidUpdateRequest;
 import com.ot.entity.IVFluidRecord;
 import com.ot.entity.IntraOpRecord;
+import com.ot.entity.OTItemCatalog;
+import com.ot.entity.PriceCatalog;
 import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
+import com.ot.enums.CatalogItemType;
 import com.ot.enums.OperationStatus;
 import com.ot.enums.VolumeUnit;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
 import com.ot.mapper.IVFluidMapper;
 import com.ot.repository.IvFluidRepository;
+import com.ot.repository.OTItemCatalogRepository;
+import com.ot.repository.PriceCatalogRepository;
 import com.ot.repository.ScheduledOperationRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.IvFluidService;
@@ -35,6 +43,9 @@ public class IvFluidServiceImpl implements IvFluidService{
 	
 	private final ScheduledOperationRepository operationRepository;
 	private final IvFluidRepository ivFluidRepository;
+	private final OTBillingIntegrationService billingIntegrationService;
+	private final OTItemCatalogRepository catalogRepository;
+    private final PriceCatalogRepository priceCatalogRepository;
 	
 	public User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -66,6 +77,21 @@ public class IvFluidServiceImpl implements IvFluidService{
 	        throw new ValidationException("IV fluids can only be added to IN_PROGRESS operations");
 	    }
 
+	    
+        // Catalog item fetch
+        OTItemCatalog catalogItem = catalogRepository.findById(request.getCatalogItemId())
+                .orElseThrow(() -> new ResourceNotFoundException("Catalog item not found"));
+        
+        // Catalog item type check
+        if (!catalogItem.getItemType().equals(CatalogItemType.IV_FLUID)) {
+            throw new ValidationException("Selected catalog item is not an implant");
+        }
+
+        // Catalog item active check
+        if (!catalogItem.getIsActive()) {
+            throw new ValidationException("Selected catalog item is inactive");
+        }
+        
 	    // 4. IntraOp exists check
 	    IntraOpRecord intraOp = operation.getIntraOp();
 	    if (intraOp == null) {
@@ -82,6 +108,11 @@ public class IvFluidServiceImpl implements IvFluidService{
 	    if (request.getUnit() == null) {
 	        throw new ValidationException("Unit cannot be null");
 	    }
+	    
+        //Catalog Price
+        PriceCatalog price = priceCatalogRepository
+                .findByCatalogItem(catalogItem)
+                .orElse(null);
 
 	    // 6. Build and save
 	    IVFluidRecord ivFluid = IVFluidRecord.builder()
@@ -96,6 +127,22 @@ public class IvFluidServiceImpl implements IvFluidService{
 	            .build();
 
 	    ivFluidRepository.save(ivFluid);
+	    
+        if (operation.getBillingMasterId() == null) {
+            throw new ValidationException("Billing not initialized for this operation");
+        }
+        
+        OTItemBillingRequest billingRequest = new OTItemBillingRequest();
+        billingRequest.setOperationExternalId(operation.getId());
+        billingRequest.setItemExternalId(null); // optional
+        billingRequest.setItemName(request.getIvFluidName());
+        billingRequest.setItemType(CatalogItemType.IMPLANT);
+//        billingRequest.setQuantity(request.getQuantityUsed());
+        billingRequest.setUnitPrice(price.getBasePrice());
+        billingRequest.setDiscountPercent(price.getDiscountPercent());
+        billingRequest.setGstPercent(price.getGstPercent());
+
+        billingIntegrationService.addItemToBilling(billingRequest);
 
 	    return IVFluidMapper.toResponse(ivFluid);
 	}

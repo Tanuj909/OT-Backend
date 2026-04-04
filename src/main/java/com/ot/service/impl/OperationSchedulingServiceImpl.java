@@ -1,6 +1,7 @@
 package com.ot.service.impl;
 
 import java.util.ArrayList;
+import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,6 +47,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OperationSchedulingServiceImpl implements OperationSchedulingService{
 
     private final ScheduledOperationRepository operationRepository;
@@ -321,7 +323,7 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
         operation.setScheduledEndTime(request.getEndTime());
         operation.setStatus(OperationStatus.SCHEDULED);
 
-        operationRepository.save(operation);
+        
 
         // block OT slot
         OTSchedule schedule = OTSchedule.builder()
@@ -337,7 +339,16 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
 
         scheduleRepository.save(schedule);
         
-        // 👇 Billing trigger — last mein
-        billingIntegrationService.createBillingMaster(operation);
+     // 👇 Billing trigger — last mein
+        Long billingMasterId = billingIntegrationService.createBillingMaster(operation);
+        
+        if (billingMasterId != null) {
+            operation.setBillingMasterId(billingMasterId);
+        } else {
+            log.warn("BillingMaster creation failed for operationId: {}", operation.getId());
+        }
+        
+        //Single Save With single Db Hit!
+        operationRepository.save(operation);
     }
 }

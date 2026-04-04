@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class ConsumableUsageRequest {
+	private Long consumableId;
     private String consumableCode;
     private String consumableName;
     private String category;
@@ -16,4 +17,7 @@ public class ConsumableUsageRequest {
     private LocalDateTime expiryDate;
     private Boolean isSterile;
     private LocalDateTime sterilizationDate;
+    private Double unitPrice;
+    private Double discountPercent;
+    private Double gstPercent;
 }

@@ -13,6 +13,7 @@ import com.ot.dto.oTItemCatalog.OTItemCatalogResponse;
 import com.ot.dto.oTItemCatalog.OTItemCatalogUpdateRequest;
 import com.ot.entity.Hospital;
 import com.ot.entity.OTItemCatalog;
+import com.ot.entity.PriceCatalog;
 import com.ot.entity.User;
 import com.ot.enums.CatalogItemType;
 import com.ot.enums.RoleType;
@@ -20,6 +21,7 @@ import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
 import com.ot.exception.ValidationException;
 import com.ot.repository.OTItemCatalogRepository;
+import com.ot.repository.PriceCatalogRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.OTItemCatalogService;
 
@@ -31,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class OTItemCatalogServiceImpl implements OTItemCatalogService {
 
     private final OTItemCatalogRepository catalogRepository;
+    private final PriceCatalogRepository priceCatalogRepository;
 
     private User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -246,6 +249,11 @@ public class OTItemCatalogServiceImpl implements OTItemCatalogService {
     // ---------------------------------------- Mapper ---------------------------------------- //
 
     private OTItemCatalogResponse mapToResponse(OTItemCatalog item) {
+    	
+        PriceCatalog price = priceCatalogRepository
+                .findByCatalogItem(item)
+                .orElse(null);
+        
         return OTItemCatalogResponse.builder()
                 .id(item.getId())
                 .itemCode(item.getItemCode())
@@ -261,6 +269,10 @@ public class OTItemCatalogServiceImpl implements OTItemCatalogService {
                 .createdBy(item.getCreatedBy())
                 .createdAt(item.getCreatedAt())
                 .updatedAt(item.getUpdatedAt())
+                // ✅ PRICE FROM PriceCatalog
+                .basePrice(price != null ? price.getBasePrice() : null)
+                .discountPercent(price != null ? price.getDiscountPercent() : null)
+                .gstPercent(price != null ? price.getGstPercent() : null)
                 .build();
     }
 }

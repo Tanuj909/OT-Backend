@@ -41,11 +41,11 @@ public class PriceCatalog {
 
     private String hsnCode;             // GST ke liye
 
-    private BigDecimal basePrice;
-    private BigDecimal discountPercent;
+    private Double basePrice;
+    private Double discountPercent;
     private BigDecimal discountAmount;      // auto calculated
     private BigDecimal priceAfterDiscount;  // auto calculated
-    private BigDecimal gstPercent;
+    private Double gstPercent;
     private BigDecimal gstAmount;           // auto calculated
     private BigDecimal totalPrice;          // final — auto calculated
 
@@ -73,14 +73,24 @@ public class PriceCatalog {
     private void calculatePrices() {
         if (basePrice == null) return;
 
-        // Step 1 — Discount
-        BigDecimal effectiveDiscount = discountPercent != null ? discountPercent : BigDecimal.ZERO;
-        this.discountAmount = basePrice.multiply(effectiveDiscount)
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-        this.priceAfterDiscount = basePrice.subtract(discountAmount);
+        // Convert base price
+        BigDecimal base = BigDecimal.valueOf(basePrice);
 
-        // Step 2 — GST on discounted price
-        BigDecimal effectiveGst = gstPercent != null ? gstPercent : BigDecimal.ZERO;
+        // Step 1 — Discount
+        BigDecimal effectiveDiscount = BigDecimal.valueOf(
+                discountPercent != null ? discountPercent : 0.0
+        );
+
+        this.discountAmount = base.multiply(effectiveDiscount)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+        this.priceAfterDiscount = base.subtract(discountAmount);
+
+        // Step 2 — GST
+        BigDecimal effectiveGst = BigDecimal.valueOf(
+                gstPercent != null ? gstPercent : 0.0
+        );
+
         this.gstAmount = priceAfterDiscount.multiply(effectiveGst)
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 

@@ -9,14 +9,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.billing.service.OTBillingIntegrationService;
 import com.ot.dto.anesthesiaDrug.AnesthesiaDrugRequest;
 import com.ot.dto.anesthesiaDrug.AnesthesiaDrugResponse;
 import com.ot.dto.anesthesiaDrug.AnesthesiaDrugSummaryResponse;
 import com.ot.dto.anesthesiaDrug.AnesthesiaDrugUpdateRequest;
+import com.ot.dto.billing.OTItemBillingRequest;
 import com.ot.entity.AnesthesiaDrug;
 import com.ot.entity.IntraOpRecord;
+import com.ot.entity.OTItemCatalog;
+import com.ot.entity.PriceCatalog;
 import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
+import com.ot.enums.CatalogItemType;
 import com.ot.enums.DrugType;
 import com.ot.enums.OperationStatus;
 import com.ot.enums.RoleType;
@@ -26,6 +31,8 @@ import com.ot.exception.ValidationException;
 import com.ot.mapper.AnesthesiaDrugMapper;
 import com.ot.repository.AnesthesiaDrugRepository;
 import com.ot.repository.IntraOpRepository;
+import com.ot.repository.OTItemCatalogRepository;
+import com.ot.repository.PriceCatalogRepository;
 import com.ot.repository.ScheduledOperationRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.AnesthesiaDrugService;
@@ -40,6 +47,9 @@ public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
     private final AnesthesiaDrugRepository drugRepository;
     private final ScheduledOperationRepository operationRepository;
     private final IntraOpRepository intraOpRepository;
+	private final OTItemCatalogRepository catalogRepository;
+    private final PriceCatalogRepository priceCatalogRepository;
+	private final OTBillingIntegrationService billingIntegrationService;
 
     private User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -73,12 +83,31 @@ public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
         if (!operation.getStatus().equals(OperationStatus.IN_PROGRESS)) {
             throw new ValidationException("Drugs can only be added to IN_PROGRESS operations");
         }
+        
+        // Catalog item fetch
+        OTItemCatalog catalogItem = catalogRepository.findById(request.getCatalogItemId())
+                .orElseThrow(() -> new ResourceNotFoundException("Catalog item not found"));
+        
+        // Catalog item type check
+        if (!catalogItem.getItemType().equals(CatalogItemType.ANESTHESIA_DRUG)) {
+            throw new ValidationException("Selected catalog item is not an implant");
+        }
+
+        // Catalog item active check
+        if (!catalogItem.getIsActive()) {
+            throw new ValidationException("Selected catalog item is inactive");
+        }
 
         // 5. IntraOp exists check
         IntraOpRecord intraOp = operation.getIntraOp();
         if (intraOp == null) {
             throw new ResourceNotFoundException("IntraOp record not found for this operation");
         }
+        
+        //Catalog Price
+        PriceCatalog price = priceCatalogRepository
+                .findByCatalogItem(catalogItem)
+                .orElse(null);
 
         // 6. Build and save
         AnesthesiaDrug drug = AnesthesiaDrug.builder()
@@ -98,6 +127,22 @@ public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
                 .build();
 
         drugRepository.save(drug);
+        
+        if (operation.getBillingMasterId() == null) {
+            throw new ValidationException("Billing not initialized for this operation");
+        }
+        
+        OTItemBillingRequest billingRequest = new OTItemBillingRequest();
+        billingRequest.setOperationExternalId(operation.getId());
+        billingRequest.setItemExternalId(null); // optional
+        billingRequest.setItemName(catalogItem.getItemName());
+        billingRequest.setItemType(CatalogItemType.ANESTHESIA_DRUG);
+//        billingRequest.setQuantity(request.getQuantityUsed());
+        billingRequest.setUnitPrice(price.getBasePrice());
+        billingRequest.setDiscountPercent(price.getDiscountPercent());
+        billingRequest.setGstPercent(price.getGstPercent());
+
+        billingIntegrationService.addItemToBilling(billingRequest);
 
         return AnesthesiaDrugMapper.mapToResponse(drug);
     }
