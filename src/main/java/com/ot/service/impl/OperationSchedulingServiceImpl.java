@@ -323,8 +323,6 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
         operation.setScheduledEndTime(request.getEndTime());
         operation.setStatus(OperationStatus.SCHEDULED);
 
-        
-
         // block OT slot
         OTSchedule schedule = OTSchedule.builder()
                 .room(room)
@@ -339,7 +337,7 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
 
         scheduleRepository.save(schedule);
         
-     // 👇 Billing trigger — last mein
+        // 👇 Billing trigger — last mein
         Long billingMasterId = billingIntegrationService.createBillingMaster(operation);
         
         if (billingMasterId != null) {

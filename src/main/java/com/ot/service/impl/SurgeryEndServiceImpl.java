@@ -8,7 +8,10 @@ import java.util.List;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import com.ot.billing.service.OTBillingIntegrationService;
 import com.ot.constants.OTRoleConstants;
+import com.ot.dto.billing.OTRoomBillingEndRequest;
 import com.ot.dto.surgeryEnd.SurgeryEndRequest;
 import com.ot.dto.surgeryEnd.SurgeryEndResponse;
 import com.ot.dto.surgeryEnd.SurgeryReadinessResponse;
@@ -50,6 +53,7 @@ public class SurgeryEndServiceImpl implements SurgeryEndService {
     private final OTRoomRepository roomRepository;
     private final VitalsLogRepository vitalsLogRepository;
     private final UsedEquipmentRepository usedEquipmentRepository;
+    private final OTBillingIntegrationService billingIntegrationService;
 
     private User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -386,6 +390,19 @@ public class SurgeryEndServiceImpl implements SurgeryEndService {
 
         postOpRepository.save(postOp);
         operationRepository.save(operation);
+        
+        //----------------Setting the End time for The room in the Billing--------------//
+        // 1. Room end time
+        OTRoomBillingEndRequest endRequest = new OTRoomBillingEndRequest();
+
+        endRequest.setOperationExternalId(operation.getId());
+        endRequest.setEndTime(endTime);
+
+        billingIntegrationService.setRoomEndTime(endRequest);
+        
+        
+        // 2. 🔥 Billing close (yahi add karna hai)
+        billingIntegrationService.closeBilling(operation.getId());
 
         return SurgeryEndResponse.builder()
                 .operationId(operation.getId())

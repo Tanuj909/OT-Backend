@@ -10,9 +10,12 @@ import org.springframework.stereotype.Service;
 
 import com.ot.billing.service.OTBillingIntegrationService;
 import com.ot.constants.OTRoleConstants;
+import com.ot.dto.billing.OTRoomBillingRequest;
 import com.ot.dto.surgeryResponse.SurgeryStartResponse;
 import com.ot.dto.surgeryResponse.SurgeryStatusResponse;
 import com.ot.embed.SurgeonAssignment;
+import com.ot.entity.OTRoom;
+import com.ot.entity.OTRoomPricing;
 import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
 import com.ot.enums.AssessmentStatus;
@@ -20,12 +23,13 @@ import com.ot.enums.OperationStatus;
 import com.ot.enums.StaffRole;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
+import com.ot.exception.ValidationException;
+import com.ot.repository.OTRoomPricingRepository;
+import com.ot.repository.OTRoomRepository;
 import com.ot.repository.ScheduledOperationRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.SurgeryService;
-
 import jakarta.transaction.Transactional;
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -34,6 +38,8 @@ public class SurgeryServiceImpl implements SurgeryService{
 	
 	private final ScheduledOperationRepository operationRepository;
 	private final OTBillingIntegrationService billingIntegrationService;
+	private final OTRoomPricingRepository roomPricingRepository;
+	private final OTRoomRepository otRoomRepository;
 	
     // ---------------------------------------- Helper ---------------------------------------- //
 
@@ -124,6 +130,25 @@ public class SurgeryServiceImpl implements SurgeryService{
                 operation.getBillingMasterId(),
                 operation.getOperationReference()
         );
+        
+     // ==================== CREATE ROOM BILLING ==================== //
+        
+        OTRoomPricing pricing = roomPricingRepository
+                .findByRoomId(operation.getRoom().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Room pricing not found"));
+        
+        OTRoomBillingRequest roomBillingRequest = new OTRoomBillingRequest();
+
+        roomBillingRequest.setOperationExternalId(operation.getId());
+
+        roomBillingRequest.setRoomNumber(String.valueOf(operation.getRoom().getId()));
+        roomBillingRequest.setRoomName(operation.getRoom().getRoomName());
+         // Optional fields
+        roomBillingRequest.setRatePerHour(pricing.getHourlyRate());
+
+        roomBillingRequest.setStartTime(operation.getActualStartTime());
+
+        billingIntegrationService.createRoomBilling(roomBillingRequest);
 
         return SurgeryStartResponse.builder()
                 .operationId(operation.getId())
@@ -157,6 +182,52 @@ public class SurgeryServiceImpl implements SurgeryService{
                 .status(operation.getStatus())
                 .actualStartTime(operation.getActualStartTime())
                 .build();
+    }
+    
+    @Transactional
+    @Override
+    public void shiftRoomBeforeSurgery(Long operationId, Long newRoomId) {
+
+        User currentUser = currentUser();
+
+        // 1. Fetch Operation
+        ScheduledOperation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Operation not found"));
+
+        // 2. Hospital validation
+        if (!operation.getHospital().getId().equals(currentUser.getHospital().getId())) {
+            throw new UnauthorizedException("You are not authorized to modify this operation");
+        }
+
+        // 3. Status check (VERY IMPORTANT)
+        if (!operation.getStatus().equals(OperationStatus.SCHEDULED)) {
+            throw new ValidationException("Room shift allowed only before surgery start");
+        }
+
+        // 4. Current room check
+        if (operation.getRoom() != null && operation.getRoom().getId().equals(newRoomId)) {
+            throw new ValidationException("Operation is already assigned to this room");
+        }
+
+        // 5. Fetch new room
+        OTRoom newRoom = otRoomRepository.findById(newRoomId)
+                .orElseThrow(() -> new ResourceNotFoundException("New OT Room not found"));
+
+        // 6. Room availability check (optional but recommended)
+//        boolean isRoomBusy = operationRepository.existsByRoomIdAndStatusIn(
+//                newRoomId,
+//                List.of(OperationStatus.SCHEDULED, OperationStatus.IN_PROGRESS)
+//        );
+
+//        if (isRoomBusy) {
+//            throw new ValidationException("Selected room is already occupied");
+//        }
+
+        // 7. Assign new room
+        operation.setRoom(newRoom);
+        operation.setUpdatedBy(currentUser.getUserName());
+
+        operationRepository.save(operation);
     }
     
     

@@ -66,7 +66,7 @@ public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
         User currentUser = currentUser();
 
         // 1. Role check — sirf ANESTHESIOLOGIST add kar sakta hai
-        if (!currentUser.getRole().equals(RoleType.ANESTHESIOLOGIST)) {
+        if (!currentUser.getRole().equals(RoleType.ANESTHESIOLOGIST) && !currentUser.getRole().equals(RoleType.ADMIN)) {
             throw new ValidationException("Only anesthesiologist can add anesthesia drugs");
         }
 
@@ -198,6 +198,39 @@ public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
         if (request.getNotes() != null)            drug.setNotes(request.getNotes());
      // updateDrug — partial update mein
         if (request.getEndTime() != null) drug.setEndTime(request.getEndTime()); // 👈 NEW
+
+        drugRepository.save(drug);
+
+        return AnesthesiaDrugMapper.mapToResponse(drug);
+    }
+    
+    @Transactional
+    @Override
+    public AnesthesiaDrugResponse updateEndTime(Long operationId, Long drugId) {
+
+        User currentUser = currentUser();
+
+        // Role check
+        if (!currentUser.getRole().equals(RoleType.ANESTHESIOLOGIST)
+                && !currentUser.getRole().equals(RoleType.ADMIN)) {
+            throw new ValidationException("Only anesthesiologist can update end time");
+        }
+
+        // Operation fetch
+        ScheduledOperation operation = operationRepository.findById(operationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Operation not found"));
+
+        // Hospital check
+        if (!operation.getHospital().getId().equals(currentUser.getHospital().getId())) {
+            throw new UnauthorizedException("You are not authorized to access this operation");
+        }
+
+        // Drug fetch
+        AnesthesiaDrug drug = drugRepository.findById(drugId)
+                .orElseThrow(() -> new ResourceNotFoundException("Drug not found"));
+
+        // 🔥 IMPORTANT: set current time only
+        drug.setEndTime(LocalDateTime.now());
 
         drugRepository.save(drug);
 

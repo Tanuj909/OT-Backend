@@ -18,4 +18,6 @@ public interface AnesthesiaDrugService {
     void removeDrug(Long operationId, Long drugId);
     
     AnesthesiaDrugSummaryResponse getDrugSummary(Long operationId);
+
+	AnesthesiaDrugResponse updateEndTime(Long operationId, Long drugId);
 }

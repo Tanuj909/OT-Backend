@@ -1,5 +1,7 @@
 package com.ot.billing.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.ot.billing.client.BillingFeignClient;
@@ -10,9 +12,15 @@ import com.ot.dto.billing.BillingMasterResponse;
 import com.ot.dto.billing.OTAdvancePaymentRequest;
 import com.ot.dto.billing.OTBillingDetailsRequest;
 import com.ot.dto.billing.OTBillingDetailsResponse;
+import com.ot.dto.billing.OTBillingSummaryResponse;
 import com.ot.dto.billing.OTItemBillingRequest;
 import com.ot.dto.billing.OTItemBillingResponse;
+import com.ot.dto.billing.OTPaymentHistoryResponse;
+import com.ot.dto.billing.OTPaymentRequest;
 import com.ot.dto.billing.OTPaymentResponse;
+import com.ot.dto.billing.OTRoomBillingEndRequest;
+import com.ot.dto.billing.OTRoomBillingRequest;
+import com.ot.dto.billing.OTRoomBillingResponse;
 import com.ot.entity.ScheduledOperation;
 
 import lombok.RequiredArgsConstructor;
@@ -25,145 +33,339 @@ public class OTBillingIntegrationService {
 
  private final BillingFeignClient billingFeignClient;
 
- //---------------------------------------------Create Billing Master--------------------------------------//
- public Long createBillingMaster(ScheduledOperation operation) {
-     try {
-         BillingMasterCreateRequest request = BillingMasterCreateRequest.builder()
-                 .hospitalExternalId(operation.getHospital().getId())
-                 .patientExternalId(operation.getPatientId())
-                 .otOperationId(operation.getId())
-                 .moduleType("OT")
-                 .build();
+    //---------------------------------------------Create Billing Master--------------------------------------//
+	public Long createBillingMaster(ScheduledOperation operation) {
+		try {
+			BillingMasterCreateRequest request = BillingMasterCreateRequest.builder()
+					.hospitalExternalId(operation.getHospital().getId()).patientExternalId(operation.getPatientId())
+					.otOperationId(operation.getId()).moduleType("OT").build();
 
-         BillingApiResponse<BillingMasterResponse> response =
-                 billingFeignClient.createBillingMaster(request);
+			BillingApiResponse<BillingMasterResponse> response = billingFeignClient.createBillingMaster(request);
 
-         if (response.isSuccess()) {
-             log.info("BillingMaster created — operationId: {}, billingId: {}",
-                     operation.getId(), response.getData().getId());
-             return response.getData().getId();
-         } else {
-             log.error("BillingMaster creation failed: {}", response.getMessage());
-             return null;
-         }
+			if (response.isSuccess()) {
+				log.info("BillingMaster created — operationId: {}, billingId: {}", operation.getId(),
+						response.getData().getId());
+				return response.getData().getId();
+			} else {
+				log.error("BillingMaster creation failed: {}", response.getMessage());
+				return null;
+			}
 
-     } catch (Exception e) {
-         log.error("Billing service error — createBillingMaster: {}", e.getMessage());
-         return null;
-     }
- }
- 
- //---------------------------------------------Create Billing Master--------------------------------------//
- public BillingMasterData getBillingByOperationId(Long operationId) {
-	    try {
-	        BillingApiResponse<BillingMasterData> response =
-	                billingFeignClient.getBillingByOperationId(operationId);
-
-	        if (response != null && response.isSuccess()) {
-	            log.info("Billing fetched — operationId: {}, billingId: {}",
-	                    operationId, response.getData().getId());
-
-	            return response.getData();
-	        } else {
-	            log.warn("Billing not found or failed — operationId: {}, message: {}",
-	                    operationId,
-	                    response != null ? response.getMessage() : "NULL RESPONSE");
-
-	            return null;
-	        }
-
-	    } catch (Exception e) {
-	        log.error("Billing service error — getBillingByOperationId: {}, error: {}",
-	                operationId, e.getMessage());
-
-	        return null;
-	    }
+		} catch (Exception e) {
+			log.error("Billing service error — createBillingMaster: {}", e.getMessage());
+			return null;
+		}
 	}
  
- //---------------------------------------------Advance Payment--------------------------------------//
- public OTPaymentResponse makeAdvancePayment(OTAdvancePaymentRequest request) {
-	    try {
-	        BillingApiResponse<OTPaymentResponse> response =
-	                billingFeignClient.makeAdvancePayment(request);
+    //---------------------------------------------Create Billing Master--------------------------------------//
+	public BillingMasterData getBillingByOperationId(Long operationId) {
+		try {
+			BillingApiResponse<BillingMasterData> response = billingFeignClient.getBillingByOperationId(operationId);
 
-	        if (response != null && response.isSuccess()) {
-	            log.info("Advance payment successful — billingId: {}, amount: {}",
-	                    request.getBillingMasterId(), request.getAmount());
+			if (response != null && response.isSuccess()) {
+				log.info("Billing fetched — operationId: {}, billingId: {}", operationId, response.getData().getId());
 
-	            return response.getData();
-	        } else {
-	            log.warn("Advance payment failed — billingId: {}, message: {}",
-	                    request.getBillingMasterId(),
-	                    response != null ? response.getMessage() : "NULL RESPONSE");
+				return response.getData();
+			} else {
+				log.warn("Billing not found or failed — operationId: {}, message: {}", operationId,
+						response != null ? response.getMessage() : "NULL RESPONSE");
 
-	            return null;
-	        }
+				return null;
+			}
 
-	    } catch (Exception e) {
-	        log.error("Billing service error — advance payment — billingId: {}, error: {}",
-	                request.getBillingMasterId(), e.getMessage());
+		} catch (Exception e) {
+			log.error("Billing service error — getBillingByOperationId: {}, error: {}", operationId, e.getMessage());
 
-	        return null;
-	    }
+			return null;
+		}
+	}
+ 
+    //---------------------------------------------Advance Payment--------------------------------------//
+	public OTPaymentResponse makeAdvancePayment(OTAdvancePaymentRequest request) {
+		try {
+			BillingApiResponse<OTPaymentResponse> response = billingFeignClient.makeAdvancePayment(request);
+
+			if (response != null && response.isSuccess()) {
+				log.info("Advance payment successful — billingId: {}, amount: {}", request.getBillingMasterId(),
+						request.getAmount());
+
+				return response.getData();
+			} else {
+				log.warn("Advance payment failed — billingId: {}, message: {}", request.getBillingMasterId(),
+						response != null ? response.getMessage() : "NULL RESPONSE");
+
+				return null;
+			}
+
+		} catch (Exception e) {
+			log.error("Billing service error — advance payment — billingId: {}, error: {}",
+					request.getBillingMasterId(), e.getMessage());
+
+			return null;
+		}
 	}
  
  
- //---------------------------------------------Create Billing Details--------------------------------------//
- public OTBillingDetailsResponse createOTBillingDetails(Long billingMasterId, String operationReference) {
+    //---------------------------------------------Create Billing Details--------------------------------------//
+	public OTBillingDetailsResponse createOTBillingDetails(Long billingMasterId, String operationReference) {
+		try {
+			OTBillingDetailsRequest request = new OTBillingDetailsRequest();
+			request.setBillingMasterId(billingMasterId);
+			request.setOperationReference(operationReference);
+
+			BillingApiResponse<OTBillingDetailsResponse> response = billingFeignClient.createOTBillingDetails(request);
+
+			if (response != null && response.isSuccess()) {
+				log.info("OT Billing Details created — billingMasterId: {}, detailsId: {}", billingMasterId,
+						response.getData().getId());
+
+				return response.getData();
+			} else {
+				log.warn("OT Billing Details creation failed — billingMasterId: {}, message: {}", billingMasterId,
+						response != null ? response.getMessage() : "NULL RESPONSE");
+
+				return null;
+			}
+
+		} catch (Exception e) {
+			log.error("Billing service error — createOTBillingDetails — billingMasterId: {}, error: {}",
+					billingMasterId, e.getMessage());
+
+			return null;
+		}
+	}
+ 
+	// ---------------------------------------------Add Items to Billing--------------------------------------//
+	public OTItemBillingResponse addItemToBilling(OTItemBillingRequest request) {
+		try {
+
+			BillingApiResponse<OTItemBillingResponse> response = billingFeignClient.addItem(request);
+
+			if (response != null && response.isSuccess()) {
+				log.info("Item added to billing — operationId: {}, item: {}", request.getOperationExternalId(),
+						request.getItemName());
+
+				return response.getData();
+			} else {
+				log.warn("Item billing failed — operationId: {}, message: {}", request.getOperationExternalId(),
+						response != null ? response.getMessage() : "NULL RESPONSE");
+
+				return null;
+			}
+
+		} catch (Exception e) {
+			log.error("Billing service error — addItem — operationId: {}, error: {}", request.getOperationExternalId(),
+					e.getMessage());
+
+			return null;
+		}
+	}
+ 
+    // ==================== CREATE ROOM BILLING ==================== //
+	public OTRoomBillingResponse createRoomBilling(OTRoomBillingRequest request) {
+		try {
+
+			BillingApiResponse<OTRoomBillingResponse> response = billingFeignClient.createRoomBilling(request);
+
+			if (response != null && response.isSuccess()) {
+				return response.getData();
+			}
+
+			return null;
+
+		} catch (Exception e) {
+			log.error("Room billing failed — operationId: {}, error: {}", request.getOperationExternalId(),
+					e.getMessage());
+			return null;
+		}
+	}
+	
+    // ==================== CREATE ROOM BILLING ==================== //
+	public void setRoomEndTime(OTRoomBillingEndRequest request) {
 	    try {
-	        OTBillingDetailsRequest request = new OTBillingDetailsRequest();
-	        request.setBillingMasterId(billingMasterId);
-	        request.setOperationReference(operationReference);
+	        BillingApiResponse<OTRoomBillingResponse> response =
+	                billingFeignClient.setEndTime(request);
+
+	        if (response != null && response.isSuccess()) {
+	            log.info("Room end time set — operationId: {}", request.getOperationExternalId());
+	        } else {
+	            log.warn("Failed to set room end time — operationId: {}, message: {}",
+	                    request.getOperationExternalId(),
+	                    response != null ? response.getMessage() : "NULL RESPONSE");
+	        }
+
+	    } catch (Exception e) {
+	        log.error("Billing service error — setRoomEndTime — operationId: {}, error: {}",
+	                request.getOperationExternalId(), e.getMessage());
+	    }
+	}
+	
+    // ==================== Close BILLING ==================== //
+	public void closeBilling(Long operationId) {
+	    try {
 
 	        BillingApiResponse<OTBillingDetailsResponse> response =
-	                billingFeignClient.createOTBillingDetails(request);
+	                billingFeignClient.closeBilling(operationId);
 
 	        if (response != null && response.isSuccess()) {
-	            log.info("OT Billing Details created — billingMasterId: {}, detailsId: {}",
-	                    billingMasterId, response.getData().getId());
+	            log.info("Billing closed — operationId: {}", operationId);
+	        } else {
+	            log.warn("Billing close failed — operationId: {}, message: {}",
+	                    operationId,
+	                    response != null ? response.getMessage() : "NULL RESPONSE");
+	        }
 
+	    } catch (Exception e) {
+	        log.error("Billing service error — closeBilling — operationId: {}, error: {}",
+	                operationId, e.getMessage());
+	    }
+	}
+	
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	//-------------------Get Billing Details By Operation Id-----------------------//
+	public OTBillingDetailsResponse getOTBillingById(Long operationId) {
+    try {
+
+        BillingApiResponse<OTBillingDetailsResponse> response =
+                billingFeignClient.getOTBillingById(operationId);
+
+        if (response != null && response.isSuccess()) {
+            log.info("OT Billing fetched — id: {}", operationId);
+            return response.getData();
+        } else {
+            log.warn("Failed to fetch OT Billing — id: {}, message: {}",
+            		operationId,
+                    response != null ? response.getMessage() : "NULL RESPONSE");
+            return null;
+        }
+
+    } catch (Exception e) {
+        log.error("Billing service error — getOTBillingById — id: {}, error: {}",
+        		operationId, e.getMessage());
+        return null;
+    }
+}
+	
+	
+	//-------------------Get Room Billing Details By Operation Id-----------------------//
+	public List<OTRoomBillingResponse> getRoomBillingByOperationId(Long operationId) {
+	    try {
+
+	        BillingApiResponse<List<OTRoomBillingResponse>> response =
+	                billingFeignClient.getRoomBillingByOperationId(operationId);
+
+	        if (response != null && response.isSuccess()) {
+	            log.info("Room billing fetched — operationId: {}", operationId);
 	            return response.getData();
 	        } else {
-	            log.warn("OT Billing Details creation failed — billingMasterId: {}, message: {}",
-	                    billingMasterId,
+	            log.warn("Failed to fetch room billing — operationId: {}, message: {}",
+	                    operationId,
 	                    response != null ? response.getMessage() : "NULL RESPONSE");
-
 	            return null;
 	        }
 
 	    } catch (Exception e) {
-	        log.error("Billing service error — createOTBillingDetails — billingMasterId: {}, error: {}",
-	                billingMasterId, e.getMessage());
-
+	        log.error("Billing service error — getRoomBillingByOperationId — operationId: {}, error: {}",
+	                operationId, e.getMessage());
 	        return null;
 	    }
 	}
- 
- //---------------------------------------------Add Items to Billing--------------------------------------//
- public OTItemBillingResponse addItemToBilling(OTItemBillingRequest request) {
+	
+	//-------------------Get Item Billing Details By Operation Id-----------------------//
+	public List<OTItemBillingResponse> getItemsByOperationId(Long operationId) {
 	    try {
 
-	        BillingApiResponse<OTItemBillingResponse> response =
-	                billingFeignClient.addItem(request);
+	        BillingApiResponse<List<OTItemBillingResponse>> response =
+	                billingFeignClient.getItemsByOperationId(operationId);
 
 	        if (response != null && response.isSuccess()) {
-	            log.info("Item added to billing — operationId: {}, item: {}",
-	                    request.getOperationExternalId(),
-	                    request.getItemName());
-
+	            log.info("Item billing fetched — operationId: {}", operationId);
 	            return response.getData();
 	        } else {
-	            log.warn("Item billing failed — operationId: {}, message: {}",
-	                    request.getOperationExternalId(),
+	            log.warn("Failed to fetch item billing — operationId: {}, message: {}",
+	                    operationId,
 	                    response != null ? response.getMessage() : "NULL RESPONSE");
-
 	            return null;
 	        }
 
 	    } catch (Exception e) {
-	        log.error("Billing service error — addItem — operationId: {}, error: {}",
-	                request.getOperationExternalId(), e.getMessage());
+	        log.error("Billing service error — getItemsByOperationId — operationId: {}, error: {}",
+	                operationId, e.getMessage());
+	        return null;
+	    }
+	}
+	
+	//-------------------Get Operation Billing Summary-----------------------//
+	public OTBillingSummaryResponse getBillingSummary(Long operationId) {
+	    try {
 
+	        BillingApiResponse<OTBillingSummaryResponse> response =
+	                billingFeignClient.getBillingSummary(operationId);
+
+	        if (response != null && response.isSuccess()) {
+	            log.info("Billing summary fetched — operationId: {}", operationId);
+	            return response.getData();
+	        } else {
+	            log.warn("Failed to fetch billing summary — operationId: {}, message: {}",
+	                    operationId,
+	                    response != null ? response.getMessage() : "NULL RESPONSE");
+	            return null;
+	        }
+
+	    } catch (Exception e) {
+	        log.error("Billing service error — getBillingSummary — operationId: {}, error: {}",
+	                operationId, e.getMessage());
+	        return null;
+	    }
+	}
+	
+	//-------------------Make Payment-----------------------//
+	public OTPaymentResponse makePayment(OTPaymentRequest request) {
+	    try {
+
+	        BillingApiResponse<OTPaymentResponse> response =
+	                billingFeignClient.makePayment(request);
+
+	        if (response != null && response.isSuccess()) {
+	            log.info("Payment successful — operationId: {}, amount: {}",
+	                    request.getOperationExternalId(),
+	                    request.getAmount());
+	            return response.getData();
+	        } else {
+	            log.warn("Payment failed — operationId: {}, message: {}",
+	                    request.getOperationExternalId(),
+	                    response != null ? response.getMessage() : "NULL RESPONSE");
+	            return null;
+	        }
+
+	    } catch (Exception e) {
+	        log.error("Billing service error — makePayment — operationId: {}, error: {}",
+	                request.getOperationExternalId(), e.getMessage());
+	        return null;
+	    }
+	}
+	
+	//------------------- Payment History -----------------------//
+	public OTPaymentHistoryResponse getPaymentHistory(Long operationId) {
+	    try {
+
+	        BillingApiResponse<OTPaymentHistoryResponse> response =
+	                billingFeignClient.getPaymentHistory(operationId);
+
+	        if (response != null && response.isSuccess()) {
+	            log.info("Payment history fetched — operationId: {}", operationId);
+	            return response.getData();
+	        } else {
+	            log.warn("Failed to fetch payment history — operationId: {}, message: {}",
+	                    operationId,
+	                    response != null ? response.getMessage() : "NULL RESPONSE");
+	            return null;
+	        }
+
+	    } catch (Exception e) {
+	        log.error("Billing service error — getPaymentHistory — operationId: {}, error: {}",
+	                operationId, e.getMessage());
 	        return null;
 	    }
 	}

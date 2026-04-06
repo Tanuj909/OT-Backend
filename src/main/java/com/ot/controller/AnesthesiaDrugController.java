@@ -53,6 +53,17 @@ public class AnesthesiaDrugController {
         return ResponseEntity.ok(ApiResponse.success("Anesthesia drug updated successfully",
                 anesthesiaDrugService.updateDrug(operationId, drugId, request)));
     }
+    
+    @PatchMapping("/{operationId}/end-time/{drugId}")
+    public ResponseEntity<ApiResponse<AnesthesiaDrugResponse>> updateEndTime(
+            @PathVariable Long operationId,
+            @PathVariable Long drugId) {
+
+        return ResponseEntity.ok(ApiResponse.success(
+                "Anesthesia drug end time updated successfully",
+                anesthesiaDrugService.updateEndTime(operationId, drugId)
+        ));
+    }
 
     @DeleteMapping("/{operationId}/remove/{drugId}")
     public ResponseEntity<ApiResponse<Void>> removeDrug(

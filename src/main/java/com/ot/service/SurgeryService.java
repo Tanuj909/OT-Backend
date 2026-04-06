@@ -12,5 +12,7 @@ public interface SurgeryService {
 
 	SurgeryStatusResponse checkSurgeryStarted(Long operationId);
 
+	void shiftRoomBeforeSurgery(Long operationId, Long newRoomId);
+
 
 }

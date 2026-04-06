@@ -22,6 +22,8 @@ public enum RoleType {
 	ORDERLY,
 	OT_ASSISTANT,
 	
+	BILLING_INCHARGE,
+	
     FELLOW,        // 👈 ADD — Specialist training mein doctor
     CONSULTANT,    // 👈 ADD — Senior advisor surgeon
 

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,6 +37,15 @@ public class SurgeryContoller {
 	        @PathVariable Long operationId) {
 
 	    return ResponseEntity.ok(surgeryService.checkSurgeryStarted(operationId));
+	}
+	
+	@PutMapping("/{operationId}/shift-room")
+	public ResponseEntity<String> shiftRoom(
+	        @PathVariable Long operationId,
+	        @RequestParam Long newRoomId
+	) {
+	    surgeryService.shiftRoomBeforeSurgery(operationId, newRoomId);
+	    return ResponseEntity.ok("Room shifted successfully");
 	}
 	
 
