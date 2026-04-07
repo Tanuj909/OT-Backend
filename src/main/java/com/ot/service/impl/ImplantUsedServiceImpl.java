@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.ot.billing.service.OTBillingIntegrationService;
 import com.ot.dto.billing.OTItemBillingRequest;
+import com.ot.dto.billing.OTItemBillingResponse;
 import com.ot.dto.implantUsed.ImplantUsedRequest;
 import com.ot.dto.implantUsed.ImplantUsedResponse;
 import com.ot.dto.implantUsed.ImplantUsedUpdateRequest;
@@ -31,9 +32,11 @@ import com.ot.service.ImplantUsedService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ImplantUsedServiceImpl implements ImplantUsedService {
 
     private final ImplantUsedRepository implantUsedRepository;
@@ -119,7 +122,16 @@ public class ImplantUsedServiceImpl implements ImplantUsedService {
         billingRequest.setDiscountPercent(price.getDiscountPercent());
         billingRequest.setGstPercent(price.getGstPercent());
 
-        billingIntegrationService.addItemToBilling(billingRequest);
+        OTItemBillingResponse billingResponse =
+                billingIntegrationService.addItemToBilling(billingRequest);
+
+        // 🔥 STORE BILLING ITEM ID
+        if (billingResponse != null) {
+        	implant.setBillingItemId(billingResponse.getId());
+        	implantUsedRepository.save(implant); // update with billing id
+        } else {
+            log.warn("Item billing failed for operationId: {}", operation.getId());
+        }
 
         return mapToResponse(implant);
     }
@@ -193,6 +205,8 @@ public class ImplantUsedServiceImpl implements ImplantUsedService {
 
         ImplantUsed implant = implantUsedRepository.findById(implantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Implant not found"));
+        
+        billingIntegrationService.removeItemFromBilling(implant.getBillingItemId());
 
         implantUsedRepository.delete(implant);
     }

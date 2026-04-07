@@ -27,6 +27,8 @@ public class ConsumableUsage {
     @JoinColumn(name = "operation_id")
     private ScheduledOperation scheduledOperation;
     
+    private Long billingItemId; //-> Billing kai Item ki ID!
+    
     private String consumableCode;
     private String consumableName;
     private String category;

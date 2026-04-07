@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.ot.billing.service.OTBillingIntegrationService;
 import com.ot.dto.billing.OTItemBillingRequest;
+import com.ot.dto.billing.OTItemBillingResponse;
+import com.ot.dto.billing.OTItemBillingUpdateRequest;
 import com.ot.dto.consumableUsage.ConsumableSummaryResponse;
 import com.ot.dto.consumableUsage.ConsumableUsageRequest;
 import com.ot.dto.consumableUsage.ConsumableUsageResponse;
@@ -29,9 +31,11 @@ import com.ot.service.ConsumableUsageService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ConsumableUsageServiceImpl implements ConsumableUsageService {
 
     private final ConsumableUsageRepository consumableRepository;
@@ -114,7 +118,16 @@ public class ConsumableUsageServiceImpl implements ConsumableUsageService {
         billingRequest.setDiscountPercent(request.getDiscountPercent());
         billingRequest.setGstPercent(request.getGstPercent());
 
-        billingIntegrationService.addItemToBilling(billingRequest);
+        OTItemBillingResponse billingResponse =
+                billingIntegrationService.addItemToBilling(billingRequest);
+
+        // 🔥 STORE BILLING ITEM ID
+        if (billingResponse != null) {
+            consumable.setBillingItemId(billingResponse.getId());
+            consumableRepository.save(consumable); // update with billing id
+        } else {
+            log.warn("Item billing failed for operationId: {}", operation.getId());
+        }
 
         return mapToResponse(consumable);
     }
@@ -173,6 +186,25 @@ public class ConsumableUsageServiceImpl implements ConsumableUsageService {
         if (request.getSterilizationDate() != null) consumable.setSterilizationDate(request.getSterilizationDate());
 
         consumableRepository.save(consumable);
+        
+     // 🔥 Update item in billing
+        if (consumable.getBillingItemId() != null) {
+
+            OTItemBillingUpdateRequest billingRequest = new OTItemBillingUpdateRequest();
+
+            billingRequest.setQuantity(consumable.getQuantityUsed());
+//            billingRequest.setUnitPrice(request.getUnitPrice());
+//            billingRequest.setDiscountPercent(request.getDiscountPercent());
+//            billingRequest.setGstPercent(request.getGstPercent());
+
+            billingIntegrationService.updateItemInBilling(
+                    consumable.getBillingItemId(),
+                    billingRequest
+            );
+
+        } else {
+            log.warn("Billing item not found for consumableId: {}", consumableId);
+        }
 
         return mapToResponse(consumable);
     }
@@ -231,6 +263,9 @@ public class ConsumableUsageServiceImpl implements ConsumableUsageService {
         if (!consumable.getScheduledOperation().getId().equals(operationId)) {
             throw new ValidationException("Consumable does not belong to this operation");
         }
+        
+        // 🔥 Remove from billing first
+        billingIntegrationService.removeItemFromBilling(consumable.getBillingItemId());
 
         consumableRepository.delete(consumable);
     }

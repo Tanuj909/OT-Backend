@@ -15,6 +15,7 @@ import com.ot.dto.billing.OTBillingDetailsResponse;
 import com.ot.dto.billing.OTBillingSummaryResponse;
 import com.ot.dto.billing.OTItemBillingRequest;
 import com.ot.dto.billing.OTItemBillingResponse;
+import com.ot.dto.billing.OTItemBillingUpdateRequest;
 import com.ot.dto.billing.OTPaymentHistoryResponse;
 import com.ot.dto.billing.OTPaymentRequest;
 import com.ot.dto.billing.OTPaymentResponse;
@@ -160,6 +161,41 @@ public class OTBillingIntegrationService {
 			return null;
 		}
 	}
+	
+	// ---------------------------------------------Remove Items to Billing--------------------------------------//
+	public void removeItemFromBilling(Long itemBillingId) {
+		try {
+
+			billingFeignClient.removeItem(itemBillingId);
+
+			log.info("Item removed from billing — itemBillingId: {}", itemBillingId);
+
+		} catch (Exception e) {
+			log.error("Billing service error — removeItem — itemBillingId: {}, error: {}", itemBillingId,
+					e.getMessage());
+		}
+	}
+	
+	// ---------------------------------------------Update Items to Billing--------------------------------------//
+	public void updateItemInBilling(Long itemBillingId, OTItemBillingUpdateRequest request) {
+	    try {
+
+	        BillingApiResponse<OTItemBillingResponse> response =
+	                billingFeignClient.updateItem(itemBillingId, request);
+
+	        if (response != null && response.isSuccess()) {
+	            log.info("Item updated in billing — itemBillingId: {}", itemBillingId);
+	        } else {
+	            log.warn("Item update failed — itemBillingId: {}, message: {}",
+	                    itemBillingId,
+	                    response != null ? response.getMessage() : "NULL RESPONSE");
+	        }
+
+	    } catch (Exception e) {
+	        log.error("Billing service error — updateItem — itemBillingId: {}, error: {}",
+	                itemBillingId, e.getMessage());
+	    }
+	}
  
     // ==================== CREATE ROOM BILLING ==================== //
 	public OTRoomBillingResponse createRoomBilling(OTRoomBillingRequest request) {
@@ -195,8 +231,8 @@ public class OTBillingIntegrationService {
 	        }
 
 	    } catch (Exception e) {
-	        log.error("Billing service error — setRoomEndTime — operationId: {}, error: {}",
-	                request.getOperationExternalId(), e.getMessage());
+	        log.error("🔥 FULL ERROR — setRoomEndTime", e);
+	        throw new RuntimeException("Billing service failed", e); // TEMP
 	    }
 	}
 	
@@ -215,9 +251,10 @@ public class OTBillingIntegrationService {
 	                    response != null ? response.getMessage() : "NULL RESPONSE");
 	        }
 
-	    } catch (Exception e) {
-	        log.error("Billing service error — closeBilling — operationId: {}, error: {}",
-	                operationId, e.getMessage());
+	    } 
+	    catch (Exception e) {
+	        log.error("Billing service error — closeBilling — operationId: {}, error: {}", e);
+	        throw new RuntimeException("Billing service failed", e); // TEMP
 	    }
 	}
 	

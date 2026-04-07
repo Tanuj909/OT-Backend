@@ -35,6 +35,8 @@ public class ImplantUsed {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hospital_id", nullable = false)
     private Hospital hospital;
+    
+    private Long billingItemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "catalog_item_id", nullable = false)

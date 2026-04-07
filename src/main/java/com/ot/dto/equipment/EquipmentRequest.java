@@ -8,6 +8,7 @@ import lombok.Data;
 
 @Data
 public class EquipmentRequest {
+	private Long equipmentId;
     private String name;
     private String model;
     private String manufacturer;

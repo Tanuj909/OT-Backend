@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.ot.billing.service.OTBillingIntegrationService;
 import com.ot.constants.OTRoleConstants;
+import com.ot.dto.billing.OTBillingDetailsResponse;
 import com.ot.dto.billing.OTRoomBillingRequest;
 import com.ot.dto.surgeryResponse.SurgeryStartResponse;
 import com.ot.dto.surgeryResponse.SurgeryStatusResponse;
@@ -31,9 +32,11 @@ import com.ot.security.CustomUserDetails;
 import com.ot.service.SurgeryService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SurgeryServiceImpl implements SurgeryService{
 	
 	private final ScheduledOperationRepository operationRepository;
@@ -126,10 +129,18 @@ public class SurgeryServiceImpl implements SurgeryService{
        
      // ==================== CREATE BILLING DETAILS ==================== //
 
-        billingIntegrationService.createOTBillingDetails(
-                operation.getBillingMasterId(),
-                operation.getOperationReference()
-        );
+        OTBillingDetailsResponse billingDetails =
+                billingIntegrationService.createOTBillingDetails(
+                        operation.getBillingMasterId(),
+                        operation.getOperationReference()
+                );
+        
+        // 🔥 STORE THIS ID
+        if (billingDetails != null) {
+            operation.setBillingDetailId(billingDetails.getId());
+        } else {
+            log.warn("OT Billing details creation failed for operationId: {}", operation.getId());
+        }
         
      // ==================== CREATE ROOM BILLING ==================== //
         

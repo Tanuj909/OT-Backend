@@ -15,6 +15,7 @@ import com.ot.dto.anesthesiaDrug.AnesthesiaDrugResponse;
 import com.ot.dto.anesthesiaDrug.AnesthesiaDrugSummaryResponse;
 import com.ot.dto.anesthesiaDrug.AnesthesiaDrugUpdateRequest;
 import com.ot.dto.billing.OTItemBillingRequest;
+import com.ot.dto.billing.OTItemBillingResponse;
 import com.ot.entity.AnesthesiaDrug;
 import com.ot.entity.IntraOpRecord;
 import com.ot.entity.OTItemCatalog;
@@ -39,9 +40,11 @@ import com.ot.service.AnesthesiaDrugService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
 
     private final AnesthesiaDrugRepository drugRepository;
@@ -142,7 +145,16 @@ public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
         billingRequest.setDiscountPercent(price.getDiscountPercent());
         billingRequest.setGstPercent(price.getGstPercent());
 
-        billingIntegrationService.addItemToBilling(billingRequest);
+        OTItemBillingResponse billingResponse =
+                billingIntegrationService.addItemToBilling(billingRequest);
+
+        // 🔥 STORE BILLING ITEM ID
+        if (billingResponse != null) {
+        	drug.setBillingItemId(billingResponse.getId());
+        	drugRepository.save(drug); // update with billing id
+        } else {
+            log.warn("Item billing failed for operationId: {}", operation.getId());
+        }
 
         return AnesthesiaDrugMapper.mapToResponse(drug);
     }
@@ -243,7 +255,7 @@ public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
 
         User currentUser = currentUser();
 
-        if (!currentUser.getRole().equals(RoleType.ANESTHESIOLOGIST)) {
+        if (!currentUser.getRole().equals(RoleType.ANESTHESIOLOGIST) && !currentUser.getRole().equals(RoleType.ADMIN)) {
             throw new ValidationException("Only anesthesiologist can remove anesthesia drugs");
         }
 
@@ -260,6 +272,9 @@ public class AnesthesiaDrugServiceImpl implements AnesthesiaDrugService {
 
         AnesthesiaDrug drug = drugRepository.findById(drugId)
                 .orElseThrow(() -> new ResourceNotFoundException("Drug not found"));
+        
+        // 🔥 Remove from billing first
+        billingIntegrationService.removeItemFromBilling(drug.getBillingItemId());
 
         drugRepository.delete(drug);
     }

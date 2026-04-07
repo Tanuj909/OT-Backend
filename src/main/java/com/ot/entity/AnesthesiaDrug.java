@@ -39,6 +39,8 @@ public class AnesthesiaDrug {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hospital_id", nullable = false)
     private Hospital hospital;
+    
+    private Long billingItemId;
 
     private String drugName;        // Propofol, Ketamine, etc.
     private Double dose;            // 200

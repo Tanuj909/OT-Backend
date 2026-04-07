@@ -43,6 +43,8 @@ public class IVFluidRecord {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "intra_op_id", nullable = false)
     private IntraOpRecord intraOpRecord;
+    
+    private Long billingItemId;
 
     private String fluidType;       // Normal Saline, Ringer Lactate, etc.
     private Integer volume;

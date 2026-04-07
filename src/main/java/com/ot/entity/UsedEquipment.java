@@ -30,6 +30,8 @@ public class UsedEquipment {
     @JoinColumn(name = "equipment_id")
     private Equipment equipment;
     
+    private Long billingItemId;
+    
     private Integer quantityUsed;
     private boolean isConsumable;
     

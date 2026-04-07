@@ -8,12 +8,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.billing.service.OTBillingIntegrationService;
+import com.ot.dto.billing.OTItemBillingRequest;
+import com.ot.dto.billing.OTItemBillingResponse;
+import com.ot.dto.equipment.EquipmentPricingResponse;
 import com.ot.dto.equipment.UsedEquipmentRequest;
 import com.ot.dto.equipment.UsedEquipmentResponse;
 import com.ot.entity.Equipment;
 import com.ot.entity.ScheduledOperation;
 import com.ot.entity.UsedEquipment;
 import com.ot.entity.User;
+import com.ot.enums.CatalogItemType;
 import com.ot.enums.EquipmentStatus;
 import com.ot.enums.OperationStatus;
 import com.ot.exception.ResourceNotFoundException;
@@ -23,17 +28,22 @@ import com.ot.repository.EquipmentRepository;
 import com.ot.repository.ScheduledOperationRepository;
 import com.ot.repository.UsedEquipmentRepository;
 import com.ot.security.CustomUserDetails;
+import com.ot.service.EquipmentPricingService;
 import com.ot.service.UsedEquipmentService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UsedEquipmentServiceImpl implements UsedEquipmentService {
 
     private final UsedEquipmentRepository usedEquipmentRepository;
     private final EquipmentRepository equipmentRepository;
     private final ScheduledOperationRepository operationRepository;
+    private final EquipmentPricingService equipmentPricingService;
+    private final OTBillingIntegrationService billingIntegrationService;
 
     private User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -86,6 +96,9 @@ public class UsedEquipmentServiceImpl implements UsedEquipmentService {
         if (alreadyAdded) {
             throw new ValidationException("Equipment already added to this operation");
         }
+        
+        //Equipment Pricing
+        EquipmentPricingResponse pricing = equipmentPricingService.getByEquipment(equipment.getId());
 
         // 8. Build and save
         UsedEquipment usedEquipment = UsedEquipment.builder()
@@ -99,6 +112,32 @@ public class UsedEquipmentServiceImpl implements UsedEquipmentService {
                 .build();
 
         usedEquipmentRepository.save(usedEquipment);
+        
+        OTItemBillingRequest billingRequest = new OTItemBillingRequest();
+
+        billingRequest.setOperationExternalId(operation.getId()); // ⚠️ ensure ye request me ho
+        billingRequest.setItemExternalId(equipment.getId());
+        billingRequest.setItemName(equipment.getName());
+        billingRequest.setItemCode(equipment.getAssetCode());
+        billingRequest.setItemType(CatalogItemType.EQUIPMENT);
+        billingRequest.setQuantity(1);
+
+        // 🔥 pricing se rate uthao
+        billingRequest.setUnitPrice(pricing.getRate()); // ya hourly/base jo tum use kar rahe ho
+
+//        billingRequest.setDiscountPercent(0.0);
+//        billingRequest.setGstPercent(18.0);
+
+        OTItemBillingResponse billingResponse =
+                billingIntegrationService.addItemToBilling(billingRequest);
+
+        // 🔥 STORE BILLING ITEM ID
+        if (billingResponse != null) {
+        	usedEquipment.setBillingItemId(billingResponse.getId());
+        	usedEquipmentRepository.save(usedEquipment); // update with billing id
+        } else {
+            log.warn("Item billing failed for operationId: {}", operation.getId());
+        }
 
         return toResponse(usedEquipment);
     }
@@ -229,6 +268,9 @@ public class UsedEquipmentServiceImpl implements UsedEquipmentService {
         if (!usedEquipment.getScheduledOperation().getId().equals(operationId)) {
             throw new ValidationException("Equipment record does not belong to this operation");
         }
+        
+        // 🔥 Remove from billing first
+        billingIntegrationService.removeItemFromBilling(usedEquipment.getBillingItemId());
 
         usedEquipmentRepository.delete(usedEquipment);
     }

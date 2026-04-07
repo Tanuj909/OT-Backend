@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.ot.billing.service.OTBillingIntegrationService;
 import com.ot.dto.billing.OTItemBillingRequest;
+import com.ot.dto.billing.OTItemBillingResponse;
 import com.ot.dto.iVFluid.IVFluidRequest;
 import com.ot.dto.iVFluid.IVFluidResponse;
 import com.ot.dto.iVFluid.IVFluidSummaryResponse;
@@ -36,9 +37,11 @@ import com.ot.service.IvFluidService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class IvFluidServiceImpl implements IvFluidService{
 	
 	private final ScheduledOperationRepository operationRepository;
@@ -142,7 +145,16 @@ public class IvFluidServiceImpl implements IvFluidService{
         billingRequest.setDiscountPercent(price.getDiscountPercent());
         billingRequest.setGstPercent(price.getGstPercent());
 
-        billingIntegrationService.addItemToBilling(billingRequest);
+        OTItemBillingResponse billingResponse =
+                billingIntegrationService.addItemToBilling(billingRequest);
+
+        // 🔥 STORE BILLING ITEM ID
+        if (billingResponse != null) {
+        	ivFluid.setBillingItemId(billingResponse.getId());
+        	ivFluidRepository.save(ivFluid); // update with billing id
+        } else {
+            log.warn("Item billing failed for operationId: {}", operation.getId());
+        }
 
 	    return IVFluidMapper.toResponse(ivFluid);
 	}
@@ -194,6 +206,8 @@ public class IvFluidServiceImpl implements IvFluidService{
 	    if (!ivFluid.getIntraOpRecord().getScheduledOperation().getId().equals(operationId)) {
 	        throw new ValidationException("IV fluid does not belong to this operation");
 	    }
+	    
+	    billingIntegrationService.removeItemFromBilling(ivFluid.getBillingItemId());
 
 	    ivFluidRepository.delete(ivFluid);
 	}

@@ -8,9 +8,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.dto.billing.OTItemBillingRequest;
+import com.ot.dto.equipment.EquipmentPricingResponse;
 import com.ot.dto.equipment.EquipmentRequest;
 import com.ot.dto.equipment.EquipmentResponse;
 import com.ot.entity.Equipment;
+import com.ot.entity.EquipmentPricing;
 import com.ot.entity.User;
 import com.ot.enums.EquipmentStatus;
 import com.ot.exception.ResourceNotFoundException;
@@ -18,6 +21,7 @@ import com.ot.exception.UnauthorizedException;
 import com.ot.mapper.EquipmentMapper;
 import com.ot.repository.EquipmentRepository;
 import com.ot.security.CustomUserDetails;
+import com.ot.service.EquipmentPricingService;
 import com.ot.service.EquipmentService;
 
 import jakarta.transaction.Transactional;
@@ -29,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class EquipmentServiceImpl implements EquipmentService {
 
     private final EquipmentRepository equipmentRepository;
+
 
     private User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -52,7 +57,7 @@ public class EquipmentServiceImpl implements EquipmentService {
             equipmentRepository.existsByAssetCode(request.getAssetCode())) {
             throw new ValidationException("Equipment with asset code " + request.getAssetCode() + " already exists");
         }
-
+        
         Equipment equipment = Equipment.builder()
                 .hospital(currentUser.getHospital())
                 .name(request.getName())
@@ -70,7 +75,7 @@ public class EquipmentServiceImpl implements EquipmentService {
                 .build();
 
         equipmentRepository.save(equipment);
-
+        
         return EquipmentMapper.toResponse(equipment);
     }
 
