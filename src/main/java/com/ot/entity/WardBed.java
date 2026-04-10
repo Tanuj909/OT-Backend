@@ -1,12 +1,9 @@
 package com.ot.entity;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
-import com.ot.enums.WardType;
+import com.ot.enums.BedStatus;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,7 +13,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -26,53 +22,45 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "wards")
+@Table(name = "ward_beds")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Ward {
+public class WardBed {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ward_room_id", nullable = false)
+    private WardRoom wardRoom;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hospital_id", nullable = false)
     private Hospital hospital;
 
-    private String wardNumber;
-    private String wardName;
+    private String bedNumber;       // e.g. "B-101-1"
 
     @Enumerated(EnumType.STRING)
-    private WardType wardType;
-
-    private Integer totalBeds;
-    private Integer occupiedBeds;
-    private Integer availableBeds;
+    private BedStatus status;       // AVAILABLE, OCCUPIED, MAINTENANCE
 
     private Boolean isActive;
     private String createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // 👇 ADD karo
-    @OneToMany(mappedBy = "ward", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<WardRoom> rooms = new ArrayList<>();
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         isActive = true;
-        occupiedBeds = 0;
-        // 👇 totalBeds null ho sakta hai
-        availableBeds = totalBeds != null ? totalBeds : 0;
+        status = BedStatus.AVAILABLE;
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-        availableBeds = totalBeds - occupiedBeds;
     }
 }

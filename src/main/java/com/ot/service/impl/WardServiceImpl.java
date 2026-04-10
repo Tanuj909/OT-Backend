@@ -220,6 +220,11 @@ public class WardServiceImpl implements WardService {
                 .createdBy(ward.getCreatedBy())
                 .createdAt(ward.getCreatedAt())
                 .updatedAt(ward.getUpdatedAt())
+                .totalRooms(ward.getRooms() != null ? ward.getRooms().size() : 0)
+                .availableRooms(ward.getRooms() != null
+                        ? (int) ward.getRooms().stream()
+                                .filter(r -> r.getIsActive() && r.getAvailableBeds() > 0)
+                                .count() : 0)
                 .build();
     }
 }

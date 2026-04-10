@@ -26,6 +26,7 @@ public class OTRoomPricing {
     private Long id;
 
     private Long roomId;
+    private Long wardRoomId;
 
     private Double basePrice;
     private Double hourlyRate;

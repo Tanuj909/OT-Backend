@@ -10,7 +10,11 @@ import com.ot.entity.OTRoomPricing;
 @Repository
 public interface OTRoomPricingRepository extends JpaRepository<OTRoomPricing, Long> {
 
+//	OT ROOM PRICING
     Optional<OTRoomPricing> findByRoomId(Long roomId);
-
     boolean existsByRoomId(Long roomId);
+    
+//  WARD ROOM PRICING
+    Optional<OTRoomPricing> findByWardRoomId(Long roomId);
+    boolean existsByWardRoomId(Long roomId);
 }
