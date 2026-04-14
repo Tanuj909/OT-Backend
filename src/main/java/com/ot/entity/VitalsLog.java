@@ -52,7 +52,6 @@
 //    }
 //}
 
-
 package com.ot.entity;
 
 import lombok.*;
@@ -84,9 +83,12 @@ public class VitalsLog {
     @JoinColumn(name = "operation_id")
     private ScheduledOperation scheduledOperation;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ward_id")                   // 👈 NEW
-    private Ward ward;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "ward_id")                   // 👈 NEW
+//    private Ward ward;
+    
+    private Long ward_room_id;
+    private Long ward_bed_id;
 
     @Enumerated(EnumType.STRING)
     private VitalsPhase phase;                       // 👈 NEW — INTRA_OP ya POST_OP

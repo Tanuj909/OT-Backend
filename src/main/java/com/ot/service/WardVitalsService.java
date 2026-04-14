@@ -6,8 +6,10 @@ import com.ot.dto.wardVitals.WardVitalsRequest;
 import com.ot.dto.wardVitals.WardVitalsResponse;
 
 public interface WardVitalsService {
-    WardVitalsResponse recordVitals(Long operationId, WardVitalsRequest request);
+//    WardVitalsResponse recordVitals(Long operationId, WardVitalsRequest request);
+	WardVitalsResponse recordVitals(Long operationId, Long ward_room_id, Long wardbedId, WardVitalsRequest request);
     List<WardVitalsResponse> getWardVitals(Long operationId);
     WardVitalsResponse getLatestVitals(Long operationId);
     boolean isPatientStable(Long operationId);
+	
 }

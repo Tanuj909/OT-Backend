@@ -25,14 +25,16 @@ public class WardVitalsController {
 
     private final WardVitalsService wardVitalsService;
 
-    @PostMapping("/{operationId}/ward-vitals")
+    @PostMapping("/{operationId}/ward-room/{wardRoomId}/ward-bed/{wardBedId}/ward-vitals")
     public ResponseEntity<ApiResponse<WardVitalsResponse>> recordVitals(
             @PathVariable Long operationId,
+            @PathVariable Long wardRoomId,
+            @PathVariable Long wardBedId,
             @RequestBody WardVitalsRequest request) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Ward vitals recorded successfully",
-                        wardVitalsService.recordVitals(operationId, request)));
+                        wardVitalsService.recordVitals(operationId,wardRoomId,wardBedId, request)));
     }
 
     @GetMapping("/{operationId}/ward-vitals")

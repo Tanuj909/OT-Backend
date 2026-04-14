@@ -28,6 +28,8 @@ import com.ot.dto.billing.OTPaymentResponse;
 import com.ot.dto.billing.OTRoomBillingEndRequest;
 import com.ot.dto.billing.OTRoomBillingRequest;
 import com.ot.dto.billing.OTRoomBillingResponse;
+import com.ot.dto.billing.OTStaffBillingRequest;
+import com.ot.dto.billing.OTStaffBillingResponse;
 
 //package com.ot.billing.client
 
@@ -46,23 +48,32 @@ public interface BillingFeignClient {
 	@GetMapping("/api/billing/master/operation/{operationId}")
 	BillingApiResponse<BillingMasterData> getBillingByOperationId(@PathVariable("operationId") Long operationId);
 	
+	
 	//-----------------------------------Make Advance Payment(Optional)-----------------------------------//
 	@PostMapping("/api/billing/ot/payment/advance")
 	BillingApiResponse<OTPaymentResponse> makeAdvancePayment(@RequestBody OTAdvancePaymentRequest request);
+	
 	
 	//-----------------------------------Create OT Billing Details-----------------------------------//
 	@PostMapping("/api/billing/ot/create")
 	BillingApiResponse<OTBillingDetailsResponse> createOTBillingDetails(@RequestBody OTBillingDetailsRequest request);
 	
+	//-----------------------------------Add Staff Billing-----------------------------------//
+	@PostMapping("/api/billing/ot/staff/add")
+	BillingApiResponse<OTStaffBillingResponse> addStaffBilling(
+	        @RequestBody OTStaffBillingRequest request);
+	
 	//-----------------------------------Add OT Items to Billing-----------------------------------//
 	@PostMapping("/api/billing/ot/items/add")
 	BillingApiResponse<OTItemBillingResponse> addItem(@RequestBody OTItemBillingRequest request);
+	
 	
 	//-----------------------------------Remove OT Items to Billing-----------------------------------//
 	@DeleteMapping("/api/billing/ot/items/{itemBillingId}/remove")
 	BillingApiResponse<Void> removeItem(
 	        @PathVariable("itemBillingId") Long itemBillingId);
 	
+	//-----------------------------------Update OT Items to Billing-----------------------------------//
 	@PutMapping("/api/billing/ot/items/{itemBillingId}/update")
 	BillingApiResponse<OTItemBillingResponse> updateItem(
 	        @PathVariable("itemBillingId") Long itemBillingId,
@@ -73,6 +84,7 @@ public interface BillingFeignClient {
     @PostMapping("/api/billing/ot/room/create")
     BillingApiResponse<OTRoomBillingResponse> createRoomBilling(
             @RequestBody OTRoomBillingRequest request);
+    
     
     // ==================== Set Room End Time ==================== //
     @PostMapping("/api/billing/ot/room/end-time")
@@ -104,6 +116,7 @@ public interface BillingFeignClient {
     @GetMapping("/api/billing/ot/items/operation/{operationId}")
     BillingApiResponse<List<OTItemBillingResponse>> getItemsByOperationId(
             @PathVariable("operationId") Long operationId);
+    
     
     // ==================== Get Operation Billing Summary ==================== //
     @GetMapping("/api/billing/ot/operation/{operationId}/summary")

@@ -80,4 +80,22 @@ public class WardAdmissionController {
         return ResponseEntity.ok(ApiResponse.success("Bed admission history fetched successfully",
                 wardAdmissionService.getByBed(wardBedId)));
     }
+    
+    // Patient ward mein hai ya nahi — Frontend check
+    @GetMapping("/patient/{patientId}/is-admitted")
+    public ResponseEntity<ApiResponse<Boolean>> isPatientAdmitted(
+            @PathVariable String patientId) {
+ 
+        return ResponseEntity.ok(ApiResponse.success("Patient admission status fetched",
+                wardAdmissionService.isPatientAdmitted(patientId)));
+    }
+    
+    // Patient ward mein hai ya nahi — Frontend check --> Through Operation Id check
+    @GetMapping("/operation/{operationId}/is-admitted")
+    public ResponseEntity<ApiResponse<Boolean>> isOperationAdmitted(
+            @PathVariable Long operationId) {
+ 
+        return ResponseEntity.ok(ApiResponse.success("Operation admission status fetched",
+                wardAdmissionService.isOperationAdmitted(operationId)));
+    }
 }

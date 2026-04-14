@@ -46,7 +46,7 @@ public class WardVitalsServiceImpl implements WardVitalsService {
 
     @Transactional
     @Override
-    public WardVitalsResponse recordVitals(Long operationId, WardVitalsRequest request) {
+    public WardVitalsResponse recordVitals(Long operationId, Long ward_room_id ,Long wardbedId, WardVitalsRequest request) {
 
         User currentUser = currentUser();
 
@@ -76,16 +76,17 @@ public class WardVitalsServiceImpl implements WardVitalsService {
         }
 
         // 6. Ward fetch from PostOp
-        Ward ward = postOp.getWard();
-        if (ward == null) {
-            throw new ResourceNotFoundException("Ward not found for this patient");
-        }
+//        Ward ward = postOp.getWardBe();
+//        if (ward == null) {
+//            throw new ResourceNotFoundException("Ward not found for this patient");
+//        }
 
         // 7. Build and save
         VitalsLog vitals = VitalsLog.builder()
                 .hospital(operation.getHospital())
                 .scheduledOperation(operation)
-                .ward(ward)
+                .ward_room_id(ward_room_id)
+                .ward_bed_id(wardbedId)
                 .phase(VitalsPhase.POST_OP)
                 .recordedTime(LocalDateTime.now())
                 .recordedBy(currentUser.getUserName())
@@ -172,8 +173,8 @@ public class WardVitalsServiceImpl implements WardVitalsService {
         return WardVitalsResponse.builder()
                 .id(vitals.getId())
                 .operationId(vitals.getScheduledOperation().getId())
-                .wardId(vitals.getWard().getId())
-                .wardName(vitals.getWard().getWardName())
+//                .wardId(vitals.getWard().getId())
+//                .wardName(vitals.getWard().getWardName())
                 .phase(vitals.getPhase())
                 .recordedTime(vitals.getRecordedTime())
                 .recordedBy(vitals.getRecordedBy())

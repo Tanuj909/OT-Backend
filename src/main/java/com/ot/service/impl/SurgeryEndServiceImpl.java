@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import com.ot.billing.service.OTBillingIntegrationService;
 import com.ot.constants.OTRoleConstants;
 import com.ot.dto.billing.OTRoomBillingEndRequest;
+import com.ot.dto.billing.OTStaffBillingRequest;
+import com.ot.dto.staffRequest.StaffFeeResponse;
 import com.ot.dto.surgeryEnd.SurgeryEndRequest;
 import com.ot.dto.surgeryEnd.SurgeryEndResponse;
 import com.ot.dto.surgeryEnd.SurgeryReadinessResponse;
@@ -39,6 +41,7 @@ import com.ot.repository.ScheduledOperationRepository;
 import com.ot.repository.UsedEquipmentRepository;
 import com.ot.repository.VitalsLogRepository;
 import com.ot.security.CustomUserDetails;
+import com.ot.service.StaffFeeService;
 import com.ot.service.SurgeryEndService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +57,7 @@ public class SurgeryEndServiceImpl implements SurgeryEndService {
     private final VitalsLogRepository vitalsLogRepository;
     private final UsedEquipmentRepository usedEquipmentRepository;
     private final OTBillingIntegrationService billingIntegrationService;
+    private final StaffFeeService staffFeeService;
 
     private User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -401,8 +405,45 @@ public class SurgeryEndServiceImpl implements SurgeryEndService {
         billingIntegrationService.setRoomEndTime(endRequest);
         
         
+     // ==================== STAFF BILLING ADD ==================== //
+
+     // 🔹 Surgeons
+     operation.getSupportingSurgeons().forEach(surgeon -> {
+
+         StaffFeeResponse fee = staffFeeService.getByStaffId(surgeon.getSurgeonId());
+
+         OTStaffBillingRequest billingRequest = new OTStaffBillingRequest();
+         billingRequest.setOperationExternalId(operation.getId());
+         billingRequest.setStaffExternalId(surgeon.getSurgeonId());
+         billingRequest.setStaffName(surgeon.getSurgeonName());
+         billingRequest.setStaffRole(surgeon.getRole().name());
+
+         billingRequest.setFees(fee.getOtFee());
+
+         billingIntegrationService.addStaffBilling(billingRequest);
+     });
+
+
+     // 🔹 Staff (Anesthesiologist, Nurse etc.)
+     operation.getSupportingStaff().forEach(staff -> {
+
+         StaffFeeResponse fee = staffFeeService.getByStaffId(staff.getStaffId());
+
+         OTStaffBillingRequest billingRequest = new OTStaffBillingRequest();
+         billingRequest.setOperationExternalId(operation.getId());
+         billingRequest.setStaffExternalId(staff.getStaffId());
+         billingRequest.setStaffName(staff.getStaffName());
+         billingRequest.setStaffRole(staff.getRole().name());
+
+         billingRequest.setFees(fee.getOtFee());
+
+         billingIntegrationService.addStaffBilling(billingRequest);
+     });
+        
+        
         // 2. 🔥 Billing close (yahi add karna hai)
-        billingIntegrationService.closeBilling(operation.getId());
+        // Abhi Temprory Disable kiya hai billing close yha nhi hogi, jab patient Discharge Hoga Tab hogi Billing Close!
+//        billingIntegrationService.closeBilling(operation.getId());  
 
         return SurgeryEndResponse.builder()
                 .operationId(operation.getId())

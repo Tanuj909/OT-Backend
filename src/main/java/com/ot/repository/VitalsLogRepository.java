@@ -14,7 +14,7 @@ public interface VitalsLogRepository extends JpaRepository<VitalsLog, Long> {
     List<VitalsLog> findByScheduledOperationIdOrderByRecordedTimeAsc(Long operationId);
     
     // Ward vitals
-    List<VitalsLog> findByWardAndPhase(Ward ward, VitalsPhase phase);
+//    List<VitalsLog> findByWardAndPhase(Ward ward, VitalsPhase phase);
 
     // Latest stable entry
     Optional<VitalsLog> findTopByScheduledOperationAndPhaseAndIsStableOrderByRecordedTimeDesc(

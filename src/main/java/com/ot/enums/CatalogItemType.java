@@ -6,6 +6,7 @@ public enum CatalogItemType {
     CONSUMABLE,
     ANESTHESIA_DRUG,
     IV_FLUID,
-    OT_PACKAGE,     // Complete surgery package
+    MEDICATION,
+    OT_PACKAGE,    
     OTHER
 }

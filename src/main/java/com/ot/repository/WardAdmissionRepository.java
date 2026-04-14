@@ -22,4 +22,10 @@ public interface WardAdmissionRepository extends JpaRepository<WardAdmission, Lo
 
     // Bed ki poori history
     List<WardAdmission> findByWardBedIdOrderByAdmissionTimeDesc(Long wardBedId);
+    
+    // Patient ward mein hai ya nahi
+    boolean existsByPatientIdAndDischargedWhenIsNull(String patientId);
+    
+    // Operation ke liye active admission hai ya nahi
+    boolean existsByOperationIdAndDischargedWhenIsNull(Long operationId);
 }

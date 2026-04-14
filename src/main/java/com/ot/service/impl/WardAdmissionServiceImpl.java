@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.ot.dto.ward.AssignWardRequest;
 import com.ot.dto.ward.WardAdmissionResponse;
+import com.ot.entity.PostOpRecord;
 import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
 import com.ot.entity.Ward;
@@ -18,10 +19,12 @@ import com.ot.entity.WardBed;
 import com.ot.entity.WardRoom;
 import com.ot.enums.BedStatus;
 import com.ot.enums.OperationStatus;
+import com.ot.enums.RecoveryStatus;
 import com.ot.exception.OperationNotAllowedException;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
 import com.ot.exception.ValidationException;
+import com.ot.repository.PostOpRecordRepository;
 import com.ot.repository.ScheduledOperationRepository;
 import com.ot.repository.WardAdmissionRepository;
 import com.ot.repository.WardBedRepository;
@@ -40,6 +43,7 @@ public class WardAdmissionServiceImpl implements WardAdmissionService {
     private final ScheduledOperationRepository scheduledOperationRepository;
     private final WardRoomRepository wardRoomRepository;
     private final WardBedRepository wardBedRepository;
+    private final PostOpRecordRepository postOpRepository;
 
     private User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -94,7 +98,20 @@ public class WardAdmissionServiceImpl implements WardAdmissionService {
         if (room.getAvailableBeds() == null || room.getAvailableBeds() <= 0) {
             throw new ValidationException("No available beds in this room");
         }
-
+        
+        // PostOp exists check
+        PostOpRecord postOp = operation.getPostOp();
+        if (postOp == null) {
+            throw new ResourceNotFoundException("PostOp record not found");
+        }
+        
+        // Setting the Recover Status
+        postOp.setStatus(RecoveryStatus.TRANSFERRED);
+        postOp.setTransferredTo(room.getRoomName());
+        postOp.setTransferredBy(currentUser.getEmail());
+        
+        postOpRepository.save(postOp);
+        
         // Bed fetch + validate
         WardBed bed = wardBedRepository.findById(request.getWardBedId())
                 .orElseThrow(() -> new ResourceNotFoundException("Ward bed not found"));
@@ -241,6 +258,19 @@ public class WardAdmissionServiceImpl implements WardAdmissionService {
                 .filter(a -> a.getHospital().getId().equals(currentUser.getHospital().getId()))
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+    
+    // -------------------- Is Patient Admitted -------------------- //
+    
+    @Override
+    public boolean isPatientAdmitted(String patientId) {
+        return wardAdmissionRepository.existsByPatientIdAndDischargedWhenIsNull(patientId);
+    }
+    
+    // -------------------- Is Patient Admitted By Opertaion Id -------------------- //
+    @Override
+    public boolean isOperationAdmitted(Long operationId) {
+        return wardAdmissionRepository.existsByOperationIdAndDischargedWhenIsNull(operationId);
     }
 
     // -------------------- Mapper -------------------- //

@@ -3,7 +3,6 @@ package com.ot.billing.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-
 import com.ot.billing.client.BillingFeignClient;
 import com.ot.dto.billing.BillingApiResponse;
 import com.ot.dto.billing.BillingMasterCreateRequest;
@@ -22,7 +21,10 @@ import com.ot.dto.billing.OTPaymentResponse;
 import com.ot.dto.billing.OTRoomBillingEndRequest;
 import com.ot.dto.billing.OTRoomBillingRequest;
 import com.ot.dto.billing.OTRoomBillingResponse;
+import com.ot.dto.billing.OTStaffBillingRequest;
+import com.ot.dto.billing.OTStaffBillingResponse;
 import com.ot.entity.ScheduledOperation;
+import com.ot.exception.BillingException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -135,6 +137,35 @@ public class OTBillingIntegrationService {
 			return null;
 		}
 	}
+	
+	
+	// ---------------------------------------------Add Staff Billing--------------------------------------//
+	public OTStaffBillingResponse addStaffBilling(OTStaffBillingRequest request) {
+	    try {
+
+	        BillingApiResponse<OTStaffBillingResponse> response =
+	                billingFeignClient.addStaffBilling(request);
+
+	        if (response != null && response.isSuccess()) {
+	            log.info("Staff billing added — operationId: {}, staff: {}",
+	                    request.getOperationExternalId(),
+	                    request.getStaffName());
+
+	            return response.getData();
+	        } else {
+	            log.warn("Staff billing failed — operationId: {}, message: {}",
+	                    request.getOperationExternalId(),
+	                    response != null ? response.getMessage() : "NULL RESPONSE");
+
+	            return null;
+	        }
+
+	    } catch (Exception e) {
+	        log.error("Billing service error — addStaffBilling — operationId: {}, error: {}",
+	                request.getOperationExternalId(), e.getMessage());
+	        return null;
+	    }
+	}
  
 	// ---------------------------------------------Add Items to Billing--------------------------------------//
 	public OTItemBillingResponse addItemToBilling(OTItemBillingRequest request) {
@@ -232,7 +263,9 @@ public class OTBillingIntegrationService {
 
 	    } catch (Exception e) {
 	        log.error("🔥 FULL ERROR — setRoomEndTime", e);
-	        throw new RuntimeException("Billing service failed", e); // TEMP
+//	        throw new RuntimeException("Billing service failed", e); // TEMP
+	        throw new BillingException("Billing Service Failed");
+	        
 	    }
 	}
 	

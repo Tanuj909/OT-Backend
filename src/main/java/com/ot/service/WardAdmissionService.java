@@ -18,4 +18,8 @@ public interface WardAdmissionService {
     List<WardAdmissionResponse> getByRoom(Long wardRoomId);
 
     List<WardAdmissionResponse> getByBed(Long wardBedId);
+
+	boolean isPatientAdmitted(String patientId);
+
+	boolean isOperationAdmitted(Long operationId);
 }
