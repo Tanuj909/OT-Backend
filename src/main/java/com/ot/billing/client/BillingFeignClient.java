@@ -25,6 +25,10 @@ import com.ot.dto.billing.OTItemBillingUpdateRequest;
 import com.ot.dto.billing.OTPaymentHistoryResponse;
 import com.ot.dto.billing.OTPaymentRequest;
 import com.ot.dto.billing.OTPaymentResponse;
+import com.ot.dto.billing.OTRecoveryRoomBillingEndRequest;
+import com.ot.dto.billing.OTRecoveryRoomBillingRequest;
+import com.ot.dto.billing.OTRecoveryRoomBillingResponse;
+import com.ot.dto.billing.OTRecoveryRoomBillingUpdateRequest;
 import com.ot.dto.billing.OTRoomBillingEndRequest;
 import com.ot.dto.billing.OTRoomBillingRequest;
 import com.ot.dto.billing.OTRoomBillingResponse;
@@ -79,17 +83,36 @@ public interface BillingFeignClient {
 	        @PathVariable("itemBillingId") Long itemBillingId,
 	        @RequestBody OTItemBillingUpdateRequest request);
 	
+    //----------------------------------------OT ROOM-----------------------------------------------//
 	
     // ==================== ROOM BILLING ==================== //
     @PostMapping("/api/billing/ot/room/create")
     BillingApiResponse<OTRoomBillingResponse> createRoomBilling(
             @RequestBody OTRoomBillingRequest request);
     
-    
     // ==================== Set Room End Time ==================== //
     @PostMapping("/api/billing/ot/room/end-time")
     BillingApiResponse<OTRoomBillingResponse> setEndTime(
             @RequestBody OTRoomBillingEndRequest request);
+    
+    
+    //----------------------------------------RECOVER ROOM-----------------------------------------------//
+    
+    // ==================== CREATE Recovery Room ==================== //
+    @PostMapping("/api/ot/recovery-room")
+    OTRecoveryRoomBillingResponse createRecoveryRoom(
+            @RequestBody OTRecoveryRoomBillingRequest request);
+    
+    // ==================== UPDATE Recovery Room ==================== //
+    @PutMapping("/api/ot/recovery-room/{recoveryId}")
+    OTRecoveryRoomBillingResponse updateRecoveryRoom(
+            @PathVariable("recoveryId") Long recoveryId,
+            @RequestBody OTRecoveryRoomBillingUpdateRequest request);
+    
+    // ==================== Set End Time For Recovery Room ==================== //
+    @PutMapping("/api/ot/recovery-room/end-time")
+    OTRecoveryRoomBillingResponse setRecoveryRoomEndTime(
+    		@RequestBody OTRecoveryRoomBillingEndRequest request);
     
     
     // ==================== Close Billing ==================== //

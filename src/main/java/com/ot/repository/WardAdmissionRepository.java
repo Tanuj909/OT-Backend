@@ -28,4 +28,10 @@ public interface WardAdmissionRepository extends JpaRepository<WardAdmission, Lo
     
     // Operation ke liye active admission hai ya nahi
     boolean existsByOperationIdAndDischargedWhenIsNull(Long operationId);
+    
+    // Is Patient Discharged hai ya nhi!(BY Patient ID)
+    Optional<WardAdmission> findTopByPatientIdOrderByCreatedAtDesc(String patientId);
+    
+    // Is Patient Discharged hai ya nhi!(BY Opertaion ID)
+    Optional<WardAdmission> findTopByOperationIdOrderByCreatedAtDesc(Long operationId);
 }

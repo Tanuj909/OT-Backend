@@ -8,6 +8,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ot.billing.service.OTBillingIntegrationService;
+import com.ot.dto.billing.OTRecoveryRoomBillingEndRequest;
+import com.ot.dto.billing.OTRecoveryRoomBillingRequest;
 import com.ot.dto.ward.AssignWardRequest;
 import com.ot.dto.ward.WardAdmissionResponse;
 import com.ot.entity.PostOpRecord;
@@ -44,6 +47,7 @@ public class WardAdmissionServiceImpl implements WardAdmissionService {
     private final WardRoomRepository wardRoomRepository;
     private final WardBedRepository wardBedRepository;
     private final PostOpRecordRepository postOpRepository;
+    private final OTBillingIntegrationService billingIntegrationService;
 
     private User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -158,6 +162,26 @@ public class WardAdmissionServiceImpl implements WardAdmissionService {
                 .build();
 
         wardAdmissionRepository.save(admission);
+        
+     // ==================== RECOVERY ROOM BILLING CREATE ==================== //
+
+        OTRecoveryRoomBillingRequest billingRequest = new OTRecoveryRoomBillingRequest();
+
+        billingRequest.setOperationExternalId(operation.getId());
+
+        billingRequest.setWardRoomId(room.getId());
+        billingRequest.setWardRoomBedId(bed.getId());
+        billingRequest.setWardRoomName(room.getRoomName());
+
+        // 🔥 Recovery start time = admission time
+        billingRequest.setStartTime(admission.getAdmissionTime());
+
+        // Optional (later DB se lo)
+        billingRequest.setRatePerHour(room.getRatePerHour());
+        billingRequest.setDiscountPercent(room.getDiscountPercent());
+        billingRequest.setGstPercent(room.getGstPercent());
+
+        billingIntegrationService.createRecoveryRoom(billingRequest);
 
         return mapToResponse(admission);
     }
@@ -199,6 +223,15 @@ public class WardAdmissionServiceImpl implements WardAdmissionService {
         var ward = room.getWard();
         ward.setOccupiedBeds(Math.max(0, (ward.getOccupiedBeds() != null ? ward.getOccupiedBeds() : 0) - 1));
         ward.setAvailableBeds(ward.getTotalBeds() - ward.getOccupiedBeds());
+        
+        //Set Recover Room End Time
+        OTRecoveryRoomBillingEndRequest endRequest = new OTRecoveryRoomBillingEndRequest();
+        endRequest.setOperationExternalId(admission.getOperation().getId());
+        endRequest.setEndTime(LocalDateTime.now());
+        billingIntegrationService.setRecoveryRoomEndTime(endRequest);
+        
+        // 2. 🔥 Billing close 
+        billingIntegrationService.closeBilling(admission.getOperation().getId());  
 
         return mapToResponse(admission);
     }
@@ -210,9 +243,15 @@ public class WardAdmissionServiceImpl implements WardAdmissionService {
 
         User currentUser = currentUser();
 
-        WardAdmission admission = wardAdmissionRepository
-                .findByOperationIdAndDischargedWhenIsNull(operationId)
-                .orElseThrow(() -> new ResourceNotFoundException("No active admission found for this operation"));
+        //----->When Active Nikalna ho, Jab Patient Discharge na hua ho!
+        
+//        WardAdmission admission = wardAdmissionRepository
+//                .findByOperationIdAndDischargedWhenIsNull(operationId)
+//                .orElseThrow(() -> new ResourceNotFoundException("No active admission found for this operation"));
+        
+      WardAdmission admission = wardAdmissionRepository
+      .findTopByOperationIdOrderByCreatedAtDesc(operationId)
+      .orElseThrow(() -> new ResourceNotFoundException("No active admission found for this operation"));
 
         if (!admission.getHospital().getId().equals(currentUser.getHospital().getId())) {
             throw new UnauthorizedException("You are not authorized to access this admission");
@@ -271,6 +310,38 @@ public class WardAdmissionServiceImpl implements WardAdmissionService {
     @Override
     public boolean isOperationAdmitted(Long operationId) {
         return wardAdmissionRepository.existsByOperationIdAndDischargedWhenIsNull(operationId);
+    }
+    
+    
+    // -------------------- Is Patient Discharged Or not (Patient Id) -------------------- //
+    @Override
+    public Boolean isPatientDischarged(String patientId) {
+
+        // Latest admission fetch karo (important)
+        WardAdmission admission = wardAdmissionRepository
+                .findTopByPatientIdOrderByCreatedAtDesc(patientId)
+                .orElse(null);
+
+        if (admission == null) {
+            return false; // kabhi admit hi nahi hua
+        }
+
+        return admission.getDischargedWhen() != null;
+    }
+    
+    // -------------------- Is Patient Discharged Or not (Operation Id) -------------------- //
+    @Override
+    public Boolean isOperationDischarged(Long operationId) {
+
+        WardAdmission admission = wardAdmissionRepository
+                .findTopByOperationIdOrderByCreatedAtDesc(operationId)
+                .orElse(null);
+
+        if (admission == null) {
+            return false;
+        }
+
+        return admission.getDischargedWhen() != null;
     }
 
     // -------------------- Mapper -------------------- //

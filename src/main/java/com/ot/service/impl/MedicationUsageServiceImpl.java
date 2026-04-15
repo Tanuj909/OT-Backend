@@ -20,6 +20,8 @@ import com.ot.entity.PriceCatalog;
 import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
 import com.ot.enums.CatalogItemType;
+import com.ot.enums.OperationStatus;
+import com.ot.exception.OperationNotAllowedException;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
 import com.ot.exception.ValidationException;
@@ -237,6 +239,15 @@ public class MedicationUsageServiceImpl implements MedicationUsageService {
         // 🔐 Hospital-level security (VERY IMPORTANT)
         if (!usage.getHospital().getId().equals(currentUser.getHospital().getId())) {
             throw new UnauthorizedException("You are not authorized to delete this record");
+        }
+        
+        //Fetch Operation
+        ScheduledOperation operation = scheduledOperationRepository.findById(usage.getScheduledOperation().getId())
+        		.orElseThrow(()-> new ResourceNotFoundException("Operation Not Found"));
+        
+        //Stop Remove Operation if the Status is COMPLETED
+        if(operation.getStatus().equals(OperationStatus.COMPLETED)){
+        	throw new OperationNotAllowedException("Can Not Remove Medication Operation is Completed");
         }
         
         // 🔥 Remove from billing first

@@ -22,4 +22,8 @@ public interface WardAdmissionService {
 	boolean isPatientAdmitted(String patientId);
 
 	boolean isOperationAdmitted(Long operationId);
+
+	Boolean isPatientDischarged(String patientId);
+
+	Boolean isOperationDischarged(Long operationId);
 }

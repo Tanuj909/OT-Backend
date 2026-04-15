@@ -25,6 +25,7 @@ public class OTBillingSummaryResponse {
     // Charges Breakdown
     private StaffChargesSummary staffCharges;
     private RoomChargesSummary roomCharges;
+    private RecoveryRoomSummary recoveryRoomCharges;   // ← NEW
     private ItemChargesSummary itemCharges;
 
     // Totals
@@ -58,6 +59,13 @@ public class OTBillingSummaryResponse {
     public static class RoomChargesSummary {
         private Double totalAmount;
         private List<OTRoomBillingResponse> rooms;
+    }
+    
+    @Data
+    @Builder
+    public static class RecoveryRoomSummary {
+        private Double totalAmount;
+        private OTRecoveryRoomBillingResponse recoveryRoom;   // single recovery room
     }
 
     @Data

@@ -98,4 +98,22 @@ public class WardAdmissionController {
         return ResponseEntity.ok(ApiResponse.success("Operation admission status fetched",
                 wardAdmissionService.isOperationAdmitted(operationId)));
     }
+    
+    // Patient discharged hai ya nahi — By Patient ID
+    @GetMapping("/patient/{patientId}/is-discharged")
+    public ResponseEntity<ApiResponse<Boolean>> isPatientDischarged(
+            @PathVariable String patientId) {
+
+        return ResponseEntity.ok(ApiResponse.success("Patient discharge status fetched",
+                wardAdmissionService.isPatientDischarged(patientId)));
+    }
+    
+    // Patient discharged hai ya nahi — By Opertaion ID
+    @GetMapping("/operation/{operationId}/is-discharged")
+    public ResponseEntity<ApiResponse<Boolean>> isOperationDischarged(
+            @PathVariable Long operationId) {
+
+        return ResponseEntity.ok(ApiResponse.success("Operation discharge status fetched",
+                wardAdmissionService.isOperationDischarged(operationId)));
+    }
 }

@@ -168,6 +168,7 @@ public class OTItemCatalogServiceImpl implements OTItemCatalogService {
 
         // Partial update
         if (request.getItemName() != null)     item.setItemName(request.getItemName());
+        if (request.getItemType() != null)     item.setItemType(request.getItemType());
         if (request.getCategory() != null)     item.setCategory(request.getCategory());
         if (request.getSubCategory() != null)  item.setSubCategory(request.getSubCategory());
         if (request.getManufacturer() != null) item.setManufacturer(request.getManufacturer());

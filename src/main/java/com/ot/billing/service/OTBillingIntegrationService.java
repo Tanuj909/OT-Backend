@@ -18,6 +18,10 @@ import com.ot.dto.billing.OTItemBillingUpdateRequest;
 import com.ot.dto.billing.OTPaymentHistoryResponse;
 import com.ot.dto.billing.OTPaymentRequest;
 import com.ot.dto.billing.OTPaymentResponse;
+import com.ot.dto.billing.OTRecoveryRoomBillingEndRequest;
+import com.ot.dto.billing.OTRecoveryRoomBillingRequest;
+import com.ot.dto.billing.OTRecoveryRoomBillingResponse;
+import com.ot.dto.billing.OTRecoveryRoomBillingUpdateRequest;
 import com.ot.dto.billing.OTRoomBillingEndRequest;
 import com.ot.dto.billing.OTRoomBillingRequest;
 import com.ot.dto.billing.OTRoomBillingResponse;
@@ -440,4 +444,56 @@ public class OTBillingIntegrationService {
 	    }
 	}
 
+	//------------------- Recover Room Billing  -----------------------//
+	public OTRecoveryRoomBillingResponse createRecoveryRoom(OTRecoveryRoomBillingRequest request) {
+		try {
+
+			OTRecoveryRoomBillingResponse response = billingFeignClient.createRecoveryRoom(request);
+
+			log.info("Recovery room billing created — operationId: {}", request.getOperationExternalId());
+
+			return response;
+
+		} catch (Exception e) {
+			log.error("Billing service error — createRecoveryRoom — operationId: {}, error: {}",
+					request.getOperationExternalId(), e.getMessage());
+			return null;
+		}
+	}
+
+	//------------------- Recover Room Billing  -----------------------//
+	public OTRecoveryRoomBillingResponse setRecoveryRoomEndTime(OTRecoveryRoomBillingEndRequest request) {	
+		try {
+			
+			OTRecoveryRoomBillingResponse response = billingFeignClient.setRecoveryRoomEndTime(request);
+			
+			log.info("Recovery room End Time created — operationId: {}", request.getOperationExternalId());
+			return response;
+			
+		} catch (Exception e) {
+			log.error("Billing service error — Revicery Room End Time Not Set — operationId: {}, error: {}",
+					request.getOperationExternalId(), e.getMessage());
+			return null;
+		}
+	}
+	
+	
+	
+	//------------------- Update Reciver Room Billing -----------------------//
+	public OTRecoveryRoomBillingResponse updateRecoveryRoom(Long recoveryId,
+			OTRecoveryRoomBillingUpdateRequest request) {
+		try {
+
+			OTRecoveryRoomBillingResponse response = billingFeignClient.updateRecoveryRoom(recoveryId, request);
+
+			log.info("Recovery room billing updated — recoveryId: {}", recoveryId);
+
+			return response;
+
+		} catch (Exception e) {
+			log.error("Billing service error — updateRecoveryRoom — recoveryId: {}, error: {}", recoveryId,
+					e.getMessage());
+			return null;
+		}
+	}
 }
