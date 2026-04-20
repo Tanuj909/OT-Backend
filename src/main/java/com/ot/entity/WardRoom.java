@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.ot.enums.WardRoomType;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -65,6 +66,9 @@ public class WardRoom {
 
     private Boolean isActive;
     private String createdBy;
+    
+    @Column(name = "assigned_to")
+    private String assignedTo;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

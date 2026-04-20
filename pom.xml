@@ -102,6 +102,18 @@
 			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
+
+<!-- Flyway Core -->
+<dependency>
+    <groupId>org.flywaydb</groupId>
+    <artifactId>flyway-core</artifactId>
+</dependency>
+
+<!-- MySQL Support -->
+<dependency>
+    <groupId>org.flywaydb</groupId>
+    <artifactId>flyway-mysql</artifactId>
+</dependency>
 	</dependencies>
 
 	<build>
