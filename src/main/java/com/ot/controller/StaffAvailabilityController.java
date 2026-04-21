@@ -1,9 +1,12 @@
 package com.ot.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ot.dto.request.CreateStaffAvailabilityRequest;
 import com.ot.dto.response.ApiResponse;
 import com.ot.dto.response.StaffAvailabilityResponse;
+import com.ot.dto.staffRequest.StaffRosterResponse;
+import com.ot.entity.User;
 import com.ot.service.StaffAvailabilityService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,15 +60,25 @@ public class StaffAvailabilityController {
     }
     
     
+    @GetMapping("/availability")
+    public ResponseEntity<ApiResponse<StaffRosterResponse>> getStaffAvailability(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
+
+        return ResponseEntity.ok(ApiResponse.success("Staff availability fetched successfully",
+        		staffAvailabilityService.getStaffAvailability(startTime, endTime)));
+    }
+    
     @GetMapping("/check")
     public ApiResponse<Boolean> checkStaffAvailability(
             @RequestParam Long staffId,
-            @RequestParam LocalDate date,
-            @RequestParam LocalTime startTime,
-            @RequestParam LocalTime endTime) {
+            @RequestParam Long hospitalId,
+            LocalDate date,
+            LocalTime start,
+            LocalTime end
+            ) {
 
-        boolean available = staffAvailabilityService.isStaffAvailable(
-                staffId, date, startTime, endTime);
+        boolean available = staffAvailabilityService.isStaffAvailable(staffId, date, start, end);
 
         return ApiResponse.success(
                 "Staff availability checked successfully",

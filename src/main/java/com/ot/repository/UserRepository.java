@@ -1,5 +1,6 @@
 package com.ot.repository;
 
+import com.ot.entity.Hospital;
 import com.ot.entity.User;
 import com.ot.enums.RoleType;
 
@@ -69,4 +70,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
                 @Param("hospitalId") Long hospitalId,
                 @Param("roles") Set<String> roles
         );
+
+	List<User> findByHospitalAndIsActive(Hospital hospital, boolean b);
 }

@@ -52,6 +52,11 @@ public class WardAdmission {
     // Admission
     private LocalDateTime admissionTime;
     private String admittedBy;
+    
+    // ✅ NEW — assigned staff (nurse ya koi bhi) jo is bed pe patient ko handle karega
+    private Long assignedStaffId;
+    private String assignedStaffName;
+    private LocalDateTime staffAssignedAt;
 
     // Discharge
     private LocalDateTime dischargedWhen;

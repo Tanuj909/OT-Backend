@@ -1,6 +1,9 @@
 package com.ot.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -47,4 +50,68 @@ public interface ScheduledOperationRepository extends JpaRepository<ScheduledOpe
 	    @Param("hospitalId") Long hospitalId,
 	    @Param("statuses") List<String> statuses
 	);
+	
+	// ScheduledOperationRepository mein
+	@Query(value = """
+	    SELECT DISTINCT os.surgeon_id FROM operation_surgeons os
+	    INNER JOIN scheduled_operations so ON os.operation_id = so.id
+	    WHERE so.hospital_id = :hospitalId
+	    AND so.status IN ('SCHEDULED', 'IN_PROGRESS')
+	    AND (
+	        (so.scheduled_start_time <= :endTime AND so.scheduled_end_time >= :startTime)
+	        OR
+	        (so.actual_start_time <= :endTime AND (so.actual_end_time >= :startTime OR so.actual_end_time IS NULL))
+	    )
+	    """, nativeQuery = true)
+	Set<Long> findBusySurgeonIds(
+	    @Param("hospitalId") Long hospitalId,
+	    @Param("startTime") LocalDateTime startTime,
+	    @Param("endTime") LocalDateTime endTime
+	);
+
+	@Query(value = """
+	    SELECT DISTINCT os.staff_id FROM operation_staff os
+	    INNER JOIN scheduled_operations so ON os.operation_id = so.id
+	    WHERE so.hospital_id = :hospitalId
+	    AND so.status IN ('SCHEDULED', 'IN_PROGRESS')
+	    AND (
+	        (so.scheduled_start_time <= :endTime AND so.scheduled_end_time >= :startTime)
+	        OR
+	        (so.actual_start_time <= :endTime AND (so.actual_end_time >= :startTime OR so.actual_end_time IS NULL))
+	    )
+	    """, nativeQuery = true)
+	Set<Long> findBusyStaffIds(
+	    @Param("hospitalId") Long hospitalId,
+	    @Param("startTime") LocalDateTime startTime,
+	    @Param("endTime") LocalDateTime endTime
+	);
+	
+	@Query(value = """
+		    SELECT so.* FROM scheduled_operations so
+		    WHERE so.hospital_id = :hospitalId
+		    AND so.status IN ('SCHEDULED', 'IN_PROGRESS')
+		    AND (
+		        (so.scheduled_start_time <= :endTime AND so.scheduled_end_time >= :startTime)
+		        OR
+		        (so.actual_start_time <= :endTime AND (so.actual_end_time >= :startTime OR so.actual_end_time IS NULL))
+		    )
+		    AND (
+		        EXISTS (
+		            SELECT 1 FROM operation_surgeons os
+		            WHERE os.operation_id = so.id AND os.surgeon_id = :userId
+		        )
+		        OR
+		        EXISTS (
+		            SELECT 1 FROM operation_staff os
+		            WHERE os.operation_id = so.id AND os.staff_id = :userId
+		        )
+		    )
+		    LIMIT 1
+		    """, nativeQuery = true)
+		Optional<ScheduledOperation> findAssignedOperationForUser(
+		    @Param("userId") Long userId,
+		    @Param("hospitalId") Long hospitalId,
+		    @Param("startTime") LocalDateTime startTime,
+		    @Param("endTime") LocalDateTime endTime
+		);
 }
