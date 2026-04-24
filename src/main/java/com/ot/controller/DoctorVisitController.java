@@ -31,6 +31,16 @@ public class DoctorVisitController {
         return ResponseEntity.ok(doctorVisitService.createVisit(request));
     }
 
+    /**
+     * PUT /api/doctor-visits/{visitId}/complete
+     * Scheduled visit ko complete karo
+     */
+    @PutMapping("/{visitId}/complete")
+    public ResponseEntity<DoctorVisitResponse> completeVisit(
+            @PathVariable Long visitId) {
+        return ResponseEntity.ok(doctorVisitService.completeVisit(visitId));
+    }
+    
     // ── Update ─────────────────────────────────────────────────────────────
 
     /**

@@ -19,6 +19,9 @@ import com.ot.dto.billing.OTAdvancePaymentRequest;
 import com.ot.dto.billing.OTBillingDetailsRequest;
 import com.ot.dto.billing.OTBillingDetailsResponse;
 import com.ot.dto.billing.OTBillingSummaryResponse;
+import com.ot.dto.billing.OTDoctorVisitBillingRequest;
+import com.ot.dto.billing.OTDoctorVisitBillingResponse;
+import com.ot.dto.billing.OTDoctorVisitBillingUpdateRequest;
 import com.ot.dto.billing.OTItemBillingRequest;
 import com.ot.dto.billing.OTItemBillingResponse;
 import com.ot.dto.billing.OTItemBillingUpdateRequest;
@@ -119,6 +122,32 @@ public interface BillingFeignClient {
     @PostMapping("/api/billing/ot/operation/{operationId}/close")
     BillingApiResponse<OTBillingDetailsResponse> closeBilling(
             @PathVariable("operationId") Long operationId);
+    
+    
+//------------------------------------------------Doctor Visit Billing------------------------------------------------//
+    
+    // ==================== Add Doctor Visit Billing ==================== //
+    @PostMapping("/api/billing/doctor-visits")   
+    BillingApiResponse<OTDoctorVisitBillingResponse> addDoctorVisit(
+    		@RequestBody OTDoctorVisitBillingRequest request);
+    
+    // ==================== Update Doctor Visit Billing ==================== //
+    @PutMapping("/api/billing/doctor-visits/{visitBillingId}")
+    BillingApiResponse<OTDoctorVisitBillingResponse> updateDoctorVisit(
+    		@PathVariable Long visitBillingId,
+    		@RequestBody OTDoctorVisitBillingUpdateRequest request
+    		);
+    
+    // ==================== Get Doctor Visit Billing BY Operation Id ==================== //
+    @GetMapping("/api/billing/doctor-visits/operation/{operationId}")
+    BillingApiResponse<List<OTDoctorVisitBillingResponse>> getByOperationId( 
+    		@PathVariable Long operationId);
+    
+    // ==================== Remove Doctor Visit Billing ==================== // 
+    @DeleteMapping("/api/billing/doctor-visits/{visitBillingId}")
+    BillingApiResponse<Void> removeDoctorVisit( 
+    		@PathVariable Long visitBillingId);
+    
     
     
 //----------------------------------------------------Get API's-----------------------------------------------------------------------//

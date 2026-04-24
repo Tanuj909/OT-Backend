@@ -35,4 +35,6 @@ public interface DoctorVisitService {
 
     // Discharge recommended kisi visit mein? (useful for frontend flag)
     boolean isDischargeRecommended(Long operationId);
+
+	DoctorVisitResponse completeVisit(Long visitId);
 }

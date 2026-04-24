@@ -38,6 +38,7 @@ public class ScheduledOperation {
     private String patientMrn;
     private String ipdAdmissionId;
     
+    
     private Long billingMasterId;    ///-> Billing Master Table Id(Can fetch the Billing Details With this!)
     private Long billingDetailId;    ///-> Billing Master Table Id(Can fetch the Billing Details With this!)
     

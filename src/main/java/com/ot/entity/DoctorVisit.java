@@ -31,6 +31,9 @@ public class DoctorVisit {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hospital_id", nullable = false)
     private Hospital hospital;
+    
+    @Column(name = "doctor_visit_billing_id")
+    private Long doctorVisitBillingId;
 
     // ── Patient Snapshot (at visit time) ──────────────────────────────────
     private String patientId;

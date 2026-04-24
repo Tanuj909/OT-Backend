@@ -12,6 +12,9 @@ import com.ot.dto.billing.OTAdvancePaymentRequest;
 import com.ot.dto.billing.OTBillingDetailsRequest;
 import com.ot.dto.billing.OTBillingDetailsResponse;
 import com.ot.dto.billing.OTBillingSummaryResponse;
+import com.ot.dto.billing.OTDoctorVisitBillingRequest;
+import com.ot.dto.billing.OTDoctorVisitBillingResponse;
+import com.ot.dto.billing.OTDoctorVisitBillingUpdateRequest;
 import com.ot.dto.billing.OTItemBillingRequest;
 import com.ot.dto.billing.OTItemBillingResponse;
 import com.ot.dto.billing.OTItemBillingUpdateRequest;
@@ -496,4 +499,87 @@ public class OTBillingIntegrationService {
 			return null;
 		}
 	}
+	
+//////////////////////////////////////////////////DOCTOR VISIT API////////////////////////////////////////////////////////////////////	
+	// ==================== Add Doctor Visit ==================== //
+	
+    public OTDoctorVisitBillingResponse addDoctorVisit(OTDoctorVisitBillingRequest request) {
+
+        try {
+            BillingApiResponse<OTDoctorVisitBillingResponse> response =
+                    billingFeignClient.addDoctorVisit(request);
+
+            validateResponse(response, "ADD_DOCTOR_VISIT");
+
+            return response.getData();
+
+        } catch (Exception ex) {
+            log.error("Error while adding doctor visit billing: {}", ex.getMessage(), ex);
+            throw new RuntimeException("Failed to add doctor visit billing");
+        }
+    }
+
+    // ==================== Update Doctor Visit ==================== //
+    public OTDoctorVisitBillingResponse updateDoctorVisit(Long visitBillingId,
+                                                          OTDoctorVisitBillingUpdateRequest request) {
+
+        try {
+            BillingApiResponse<OTDoctorVisitBillingResponse> response =
+                    billingFeignClient.updateDoctorVisit(visitBillingId, request);
+
+            validateResponse(response, "UPDATE_DOCTOR_VISIT");
+
+            return response.getData();
+
+        } catch (Exception ex) {
+            log.error("Error while updating doctor visit billing: {}", ex.getMessage(), ex);
+            throw new RuntimeException("Failed to update doctor visit billing");
+        }
+    }
+
+    // ==================== Get By Operation Id ==================== //
+    public List<OTDoctorVisitBillingResponse> getByOperationId(Long operationId) {
+
+        try {
+            BillingApiResponse<List<OTDoctorVisitBillingResponse>> response =
+                    billingFeignClient.getByOperationId(operationId);
+
+            validateResponse(response, "GET_DOCTOR_VISIT");
+
+            return response.getData();
+
+        } catch (Exception ex) {
+            log.error("Error while fetching doctor visit billing: {}", ex.getMessage(), ex);
+            throw new RuntimeException("Failed to fetch doctor visit billing");
+        }
+    }
+
+    // ==================== Delete Doctor Visit ==================== //
+    public void removeDoctorVisit(Long visitBillingId) {
+
+        try {
+            BillingApiResponse<Void> response =
+                    billingFeignClient.removeDoctorVisit(visitBillingId);
+
+            validateResponse(response, "DELETE_DOCTOR_VISIT");
+
+        } catch (Exception ex) {
+            log.error("Error while deleting doctor visit billing: {}", ex.getMessage(), ex);
+            throw new RuntimeException("Failed to delete doctor visit billing");
+        }
+    }
+
+    // ==================== Common Validator ==================== //
+    private void validateResponse(BillingApiResponse<?> response, String operation) {
+
+        if (response == null) {
+            throw new RuntimeException("Null response from Billing Service for " + operation);
+        }
+
+        if (!response.isSuccess()) {
+            throw new RuntimeException(
+                    "Billing Service failed for " + operation + ": " + response.getMessage()
+            );
+        }
+    }
 }

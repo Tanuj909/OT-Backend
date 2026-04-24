@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.ot.entity.Hospital;
+import com.ot.entity.ScheduledOperation;
 import com.ot.entity.StaffFee;
 import com.ot.entity.User;
 
@@ -21,4 +22,6 @@ public interface StaffFeeRepository extends JpaRepository<StaffFee, Long> {
     List<StaffFee> findByHospital(Hospital hospital);
 
     List<StaffFee> findByHospitalAndIsActive(Hospital hospital, Boolean isActive);
+
+    Optional<StaffFee> findByStaff_Id(Long staffId);
 }

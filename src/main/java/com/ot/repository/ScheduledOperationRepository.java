@@ -114,4 +114,7 @@ public interface ScheduledOperationRepository extends JpaRepository<ScheduledOpe
 		    @Param("startTime") LocalDateTime startTime,
 		    @Param("endTime") LocalDateTime endTime
 		);
+	
+	@Query("SELECT COUNT(o) FROM ScheduledOperation o WHERE DATE(o.createdAt) = CURRENT_DATE")
+	long countTodayOperations();
 }

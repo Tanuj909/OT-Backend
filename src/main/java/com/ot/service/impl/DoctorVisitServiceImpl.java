@@ -1,14 +1,19 @@
 package com.ot.service.impl;
 
+import com.ot.billing.service.OTBillingIntegrationService;
+import com.ot.dto.billing.OTDoctorVisitBillingRequest;
+import com.ot.dto.billing.OTDoctorVisitBillingResponse;
 import com.ot.dto.ward.CreateDoctorVisitRequest;
 import com.ot.dto.ward.DoctorVisitResponse;
 import com.ot.dto.ward.UpdateDoctorVisitRequest;
 import com.ot.entity.DoctorVisit;
 import com.ot.entity.ScheduledOperation;
+import com.ot.entity.StaffFee;
 import com.ot.entity.User;
 import com.ot.entity.WardAdmission;
 import com.ot.enums.DoctorVisitStatus;
 import com.ot.enums.RoleType;
+import com.ot.exception.BillingException;
 import com.ot.exception.DataConflictException;
 import com.ot.exception.OperationNotAllowedException;
 import com.ot.exception.ResourceNotFoundException;
@@ -16,6 +21,7 @@ import com.ot.exception.UnauthorizedException;
 import com.ot.exception.ValidationException;
 import com.ot.repository.DoctorVisitRepository;
 import com.ot.repository.ScheduledOperationRepository;
+import com.ot.repository.StaffFeeRepository;
 import com.ot.repository.UserRepository;
 import com.ot.repository.WardAdmissionRepository;
 import com.ot.security.CustomUserDetails;
@@ -38,6 +44,8 @@ public class DoctorVisitServiceImpl implements DoctorVisitService {
     private final ScheduledOperationRepository scheduledOperationRepository;
     private final WardAdmissionRepository wardAdmissionRepository;
     private final UserRepository userRepository;
+    private final StaffFeeRepository feeRepository;
+    private final OTBillingIntegrationService billingIntegrationService;
 
     // ── Auth Helper ────────────────────────────────────────────────────────
 
@@ -84,8 +92,23 @@ public class DoctorVisitServiceImpl implements DoctorVisitService {
                         "No active ward admission found for this operation. " +
                         "Patient must be admitted in ward before recording a doctor visit."));
         
+        
+		Long doctorId;
+
+		// 👉 Case 1: DoctorId request se aaya hai
+		if (request.getDoctorId() != null) {
+			doctorId = request.getDoctorId();
+		}
+		// 👉 Case 2: DoctorId nahi aaya → current user doctor hona chahiye
+		else {
+			if (!currentUser.getRole().equals(RoleType.DOCTOR)) {
+				throw new ValidationException("Doctor ID is required if logged-in user is not a doctor");
+			}
+			doctorId = currentUser.getId();
+		}
+     
         // Check if Doctor Exists or not And it's Role is Doctor
-        User doctor = userRepository.findById(request.getDoctorId())
+        User doctor = userRepository.findById(doctorId)
         		.orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
         
         // Check if User is Doctor
@@ -107,8 +130,8 @@ public class DoctorVisitServiceImpl implements DoctorVisitService {
                         ? request.getVisitTime()
                         : LocalDateTime.now())
                 // Doctor info
-                .doctorId(request.getDoctorId())
-                .doctorName(request.getDoctorName())
+                .doctorId(doctorId)
+                .doctorName(doctor.getUserName())
                 .doctorSpecialization(request.getDoctorSpecialization())
                 // Recorded by — logged in user (could be nurse recording on behalf)
                 .recordedById(currentUser.getId())
@@ -136,10 +159,71 @@ public class DoctorVisitServiceImpl implements DoctorVisitService {
                 .build();
 
         doctorVisitRepository.save(visit);
+        
+     // ================= BILLING CALL (ONLY IF COMPLETED) =================
+        if (visit.getStatus() == DoctorVisitStatus.COMPLETED) {
+        	try {
+        	    OTDoctorVisitBillingResponse billingResponse =
+        	            billingIntegrationService.addDoctorVisit(
+        	                    mapToBillingRequest(visit)
+        	            );
 
+        	    visit.setDoctorVisitBillingId(billingResponse.getId());
+        	    doctorVisitRepository.save(visit);
+
+        	} catch (Exception ex) {
+        	    throw new RuntimeException("Billing failed, visit cannot be completed",ex);
+        	}
+        }
         return mapToResponse(visit);
     }
 
+    
+    @Transactional
+    @Override
+    public DoctorVisitResponse completeVisit(Long visitId) {
+
+        User currentUser = currentUser();
+
+        DoctorVisit visit = fetchAndValidateHospital(visitId, currentUser);
+
+        // ❌ Already completed
+        if (visit.getStatus() == DoctorVisitStatus.COMPLETED) {
+            throw new OperationNotAllowedException("Visit is already completed");
+        }
+
+        // ❌ Cancelled visit complete nahi ho sakti
+        if (visit.getStatus() == DoctorVisitStatus.CANCELLED) {
+            throw new OperationNotAllowedException("Cancelled visit cannot be completed");
+        }
+
+        // ❌ Only SCHEDULED allowed
+        if (visit.getStatus() != DoctorVisitStatus.SCHEDULED) {
+            throw new OperationNotAllowedException("Only scheduled visits can be completed");
+        }
+
+        // ✅ Mark as completed
+        visit.setStatus(DoctorVisitStatus.COMPLETED);
+
+        doctorVisitRepository.save(visit);
+
+        // ================= BILLING CALL =================
+        try {
+            OTDoctorVisitBillingResponse billingResponse =
+                    billingIntegrationService.addDoctorVisit(
+                            mapToBillingRequest(visit)
+                    );
+
+            visit.setDoctorVisitBillingId(billingResponse.getId());
+            doctorVisitRepository.save(visit);
+
+        } catch (Exception ex) {
+            throw new RuntimeException("Billing failed, visit cannot be completed", ex);
+        }
+
+        return mapToResponse(visit);
+    }
+    
     // ── Update ─────────────────────────────────────────────────────────────
 
     @Transactional
@@ -316,4 +400,37 @@ public class DoctorVisitServiceImpl implements DoctorVisitService {
                 .updatedAt(v.getUpdatedAt())
                 .build();
     }
+    
+//    Billing Mapper
+    private OTDoctorVisitBillingRequest mapToBillingRequest(DoctorVisit visit) {
+
+        OTDoctorVisitBillingRequest request = new OTDoctorVisitBillingRequest();
+
+        request.setOperationExternalId(visit.getScheduledOperation().getId());
+        request.setDoctorExternalId(visit.getDoctorId());
+        request.setDoctorName(visit.getDoctorName());
+        request.setVisitTime(visit.getVisitTime());
+
+        // optional but recommended (future idempotency)
+//        request.setVisitId(visit.getId());
+        
+        // 🔥 Fetch Doctor Fee from StaffFee table
+        Double fees = getDoctorFee(visit.getDoctorId());
+
+        request.setFees(fees); // static for now
+
+        return request;
+    }
+    
+    //Doctor Fees Resolver:
+    private Double getDoctorFee(Long doctorId) {
+
+        return feeRepository.findByStaff_Id(doctorId)
+                .map(StaffFee::getVisitFee)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Staff fee not configured for doctorId: " + doctorId
+                        ));
+    }
+    
 }

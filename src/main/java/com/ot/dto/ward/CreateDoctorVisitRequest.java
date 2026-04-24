@@ -13,7 +13,7 @@ public class CreateDoctorVisitRequest {
     private Long operationId;
 
     // ── Doctor Info ────────────────────────────────────────────────────────
-    @NotNull(message = "doctorId is required")
+//    @NotNull(message = "doctorId is required")
     private Long   doctorId;
 
     @NotNull(message = "doctorName is required")
