@@ -1,6 +1,7 @@
 package com.ot.repository;
 
 import com.ot.entity.DoctorVisit;
+import com.ot.entity.ScheduledOperation;
 import com.ot.enums.DoctorVisitStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -26,4 +27,7 @@ public interface DoctorVisitRepository extends JpaRepository<DoctorVisit, Long> 
 
     // Check if discharge recommended in any visit for this operation
     boolean existsByScheduledOperationIdAndDischargeRecommendedTrue(Long operationId);
+    
+    
+    List<DoctorVisit> findByScheduledOperation(ScheduledOperation operation);
 }

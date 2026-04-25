@@ -11,21 +11,26 @@ import org.springframework.stereotype.Service;
 import com.ot.dto.opertaionReport.OperationReportResponse;
 import com.ot.embed.StaffAssignment;
 import com.ot.embed.SurgeonAssignment;
+import com.ot.entity.DoctorVisit;
 import com.ot.entity.IntraOpRecord;
 import com.ot.entity.PostOpRecord;
 import com.ot.entity.PreOpAssessment;
 import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
+import com.ot.entity.WardAdmission;
+import com.ot.entity.WardRoom;
 import com.ot.enums.StaffRole;
 import com.ot.enums.VitalsPhase;
 import com.ot.enums.VolumeUnit;
 import com.ot.exception.ResourceNotFoundException;
 import com.ot.exception.UnauthorizedException;
 import com.ot.repository.ConsumableUsageRepository;
+import com.ot.repository.DoctorVisitRepository;
 import com.ot.repository.ImplantUsedRepository;
 import com.ot.repository.ScheduledOperationRepository;
 import com.ot.repository.UsedEquipmentRepository;
 import com.ot.repository.VitalsLogRepository;
+import com.ot.repository.WardAdmissionRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.OperationReportService;
 
@@ -40,6 +45,8 @@ public class OperationReportServiceImpl implements OperationReportService {
 	private final UsedEquipmentRepository usedEquipmentRepository;
 	private final ConsumableUsageRepository consumableRepository;
 	private final ImplantUsedRepository implantUsedRepository;
+	private final DoctorVisitRepository doctorVisitRepository;
+	private final WardAdmissionRepository wardAdmissionRepository;
 
 	
     private User currentUser() {
@@ -255,6 +262,46 @@ public class OperationReportServiceImpl implements OperationReportService {
 	    // 7. PostOp
 	    OperationReportResponse.PostOpSummary postOpSummary = null;
 	    if (operation.getPostOp() != null) {
+	    	
+	    	WardAdmission admission = wardAdmissionRepository
+	    	        .findByOperation(operation)
+	    	        .orElse(null);
+	    	
+	    	OperationReportResponse.RecoveryRoomDetails recoveryRoomDetails = null;
+
+	    	if (admission != null && admission.getWardRoom() != null) {
+
+	    	    WardRoom room = admission.getWardRoom();
+
+	    	    recoveryRoomDetails = OperationReportResponse.RecoveryRoomDetails.builder()
+	    	            .roomNumber(room.getRoomNumber())
+	    	            .roomName(room.getRoomName())
+	    	            .roomType(room.getRoomType() != null ? room.getRoomType().name() : null)
+	    	            .totalBeds(room.getTotalBeds())
+	    	            .availableBeds(room.getAvailableBeds())
+	    	            .ratePerHour(room.getRatePerHour())
+	    	            .gstPercent(room.getGstPercent())
+	    	            .build();
+	    	}
+	    	
+	    	List<DoctorVisit> visits = doctorVisitRepository
+	    	        .findByScheduledOperation(operation);
+
+	    	List<OperationReportResponse.DoctorVisitSummary> visitSummaryList =
+	    	        visits.stream()
+	    	        .map(v -> OperationReportResponse.DoctorVisitSummary.builder()
+	    	                .visitId(v.getId())
+	    	                .visitTime(v.getVisitTime())
+	    	                .doctorName(v.getDoctorName())
+	    	                .specialization(v.getDoctorSpecialization())
+	    	                .clinicalObservations(v.getClinicalObservations())
+	    	                .diagnosis(v.getDiagnosis())
+	    	                .treatmentPlan(v.getTreatmentPlan())
+	    	                .dischargeRecommended(v.getDischargeRecommended())
+	    	                .nextVisit(v.getNextVisitScheduled())
+	    	                .status(v.getStatus().name())
+	    	                .build())
+	    	        .collect(Collectors.toList());
 	        PostOpRecord postOp = operation.getPostOp();
 	        postOpSummary = OperationReportResponse.PostOpSummary.builder()
 	                .surgeryEndTime(postOp.getSurgeryEndTime())
@@ -273,6 +320,9 @@ public class OperationReportServiceImpl implements OperationReportService {
 	                .transferredBy(postOp.getTransferredBy())
 	                .receivedBy(postOp.getReceivedBy())
 	                .status(postOp.getStatus())
+	                // ✅ NEW
+	                .recoveryRoom(recoveryRoomDetails)
+	                .doctorVisits(visitSummaryList)
 	                .build();
 	    }
 

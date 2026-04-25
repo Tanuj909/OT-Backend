@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.ot.entity.OTRoom;
 import com.ot.entity.ScheduledOperation;
 import com.ot.enums.OperationStatus;
 
@@ -117,4 +119,64 @@ public interface ScheduledOperationRepository extends JpaRepository<ScheduledOpe
 	
 	@Query("SELECT COUNT(o) FROM ScheduledOperation o WHERE DATE(o.createdAt) = CURRENT_DATE")
 	long countTodayOperations();
+	
+//----------------------------------------------------Admin Dashboard--------------------------------------------------------------------//
+	// ScheduledOperationRepository mein
+
+	@Query("""
+		    SELECT so FROM ScheduledOperation so
+		    WHERE so.hospital.id = :hospitalId
+		    AND so.scheduledStartTime BETWEEN :start AND :end
+		    ORDER BY so.scheduledStartTime ASC
+		""")
+		List<ScheduledOperation> findTodayOperations(
+		        @Param("hospitalId") Long hospitalId,
+		        @Param("start") LocalDateTime start,
+		        @Param("end") LocalDateTime end
+		);
+
+	// Pending requests
+	@Query("""
+	    SELECT so FROM ScheduledOperation so
+	    WHERE so.hospital.id = :hospitalId
+	    AND so.status = 'REQUESTED'
+	    ORDER BY so.createdAt ASC
+	    """)
+	List<ScheduledOperation> findPendingRequests(@Param("hospitalId") Long hospitalId);
+
+	// Recent operations
+	@Query("""
+	    SELECT so FROM ScheduledOperation so
+	    WHERE so.hospital.id = :hospitalId
+	    AND so.status IN ('COMPLETED', 'CANCELLED', 'IN_PROGRESS')
+	    ORDER BY so.updatedAt DESC
+	    """)
+	List<ScheduledOperation> findRecentOperations(
+	        @Param("hospitalId") Long hospitalId,
+	        Pageable pageable);
+
+	// Overdue operations — IN_PROGRESS and exceeded scheduledEndTime
+	@Query("""
+	    SELECT so FROM ScheduledOperation so
+	    WHERE so.hospital.id = :hospitalId
+	    AND so.status = 'IN_PROGRESS'
+	    AND so.scheduledEndTime < :now
+	    ORDER BY so.scheduledEndTime ASC
+	    """)
+	List<ScheduledOperation> findOverdueOperations(
+	        @Param("hospitalId") Long hospitalId,
+	        @Param("now") LocalDateTime now);
+
+	// Stats
+	Long countByHospitalIdAndStatus(Long hospitalId, OperationStatus status);
+
+	@Query("""
+	    SELECT COUNT(so) FROM ScheduledOperation so
+	    WHERE so.hospital.id = :hospitalId
+	    AND so.status IN ('SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED')
+	    AND DATE(so.scheduledStartTime) = CURRENT_DATE
+	    """)
+	Long countTodayOperations(@Param("hospitalId") Long hospitalId);
+	
+	List<ScheduledOperation> findByRoomAndStatus(OTRoom room, OperationStatus status);
 }

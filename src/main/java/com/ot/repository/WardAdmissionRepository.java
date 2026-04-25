@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.ot.entity.ScheduledOperation;
 import com.ot.entity.WardAdmission;
 
 @Repository
@@ -34,4 +35,6 @@ public interface WardAdmissionRepository extends JpaRepository<WardAdmission, Lo
     
     // Is Patient Discharged hai ya nhi!(BY Opertaion ID)
     Optional<WardAdmission> findTopByOperationIdOrderByCreatedAtDesc(Long operationId);
+    
+    Optional<WardAdmission> findByOperation(ScheduledOperation operation);
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.ot.entity.Hospital;
 import com.ot.entity.OTRoom;
 import com.ot.enums.RoomStatus;
 
@@ -21,4 +22,6 @@ public interface OTRoomRepository extends JpaRepository<OTRoom, Long> {
     List<OTRoom> findByOperationTheaterIdAndOperationTheaterHospitalId(
     	    Long operationTheaterId, Long hospitalId
     	);
+
+	List<OTRoom> findByHospital(Hospital hospital);
 }

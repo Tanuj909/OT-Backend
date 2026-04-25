@@ -156,6 +156,12 @@ public class OperationReportResponse {
         private String transferredBy;
         private String receivedBy;
         private RecoveryStatus status;
+        
+        // ✅ NEW — Recovery Room Details
+        private RecoveryRoomDetails recoveryRoom;
+
+        // ✅ NEW — Doctor Visits
+        private List<DoctorVisitSummary> doctorVisits;
     }
 
     @Data
@@ -233,5 +239,32 @@ public class OperationReportResponse {
         private Integer quantity;
         private String bodyLocation;
         private String usedBy;
+    }
+    
+    @Data
+    @Builder
+    public static class RecoveryRoomDetails {
+        private String roomNumber;
+        private String roomName;
+        private String roomType;
+        private Integer totalBeds;
+        private Integer availableBeds;
+        private Double ratePerHour;
+        private Double gstPercent;
+    }
+    
+    @Data
+    @Builder
+    public static class DoctorVisitSummary {
+        private Long visitId;
+        private LocalDateTime visitTime;
+        private String doctorName;
+        private String specialization;
+        private String clinicalObservations;
+        private String diagnosis;
+        private String treatmentPlan;
+        private Boolean dischargeRecommended;
+        private LocalDateTime nextVisit;
+        private String status;
     }
 }
