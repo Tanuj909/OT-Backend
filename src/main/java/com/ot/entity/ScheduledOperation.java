@@ -73,6 +73,14 @@ public class ScheduledOperation {
     private String createdBy;
     private String updatedBy;
     
+    @Column(name = "transfer_status")
+    private String transferStatus; 
+    // NONE / READY_FOR_IPD_TRANSFER / TRANSFERRED
+
+    @Column(name = "transferred_to")
+    private String transferredTo; 
+    // IPD / ICU / DISCHARGED
+    
     @Version
     private Long version;
     

@@ -7,19 +7,11 @@ import java.time.LocalDateTime;
 public class IpdOtRequest {
 
     private Long patientId;
-
+    private Long admissionId;
     private String patientName;
-
-    private Long ipdAdmissionId;
-
+    private LocalDateTime operationDate;
     private String procedureName;
-
-    private String surgeonId;
-
-    private String surgeonName;
-
-    private LocalDateTime preferredDate;
-
+    private Long hospitalId;
     private String complexity;
 
 }

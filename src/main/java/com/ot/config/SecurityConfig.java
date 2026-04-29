@@ -35,6 +35,7 @@ public class SecurityConfig {
                 // ✅ ADD THIS LINE
                 .requestMatchers(HttpMethod.POST, "/api/super-admin/register").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/ipd/ot-request").permitAll() // 👈 ONLY THIS OPEN
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )
