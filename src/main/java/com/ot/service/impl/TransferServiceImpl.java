@@ -49,4 +49,35 @@ public class TransferServiceImpl implements TransferService {
 	        Long.valueOf(operation.getIpdAdmissionId())
 	    );
 	}
+	
+	
+	@Override
+	@Transactional
+	public void markAcceptedByIpd(Long admissionId) {
+
+	    /* ================= FETCH ================= */
+
+	    ScheduledOperation operation = operationRepository
+	            .findByIpdAdmissionId(String.valueOf(admissionId))
+	            .orElseThrow(() -> new RuntimeException("Operation not found for this admission"));
+
+	    /* ================= VALIDATIONS ================= */
+
+	    if (!"READY_FOR_IPD_TRANSFER".equalsIgnoreCase(operation.getTransferStatus())) {
+	        throw new IllegalStateException("Operation is not ready for transfer");
+	    }
+
+	    /* ================= IDEMPOTENT ================= */
+
+	    if ("ACCEPTED_BY_IPD".equalsIgnoreCase(operation.getTransferStatus())) {
+	        return;
+	    }
+
+	    /* ================= UPDATE ================= */
+
+	    operation.setTransferStatus("ACCEPTED_BY_IPD");
+	    operation.setTransferredTo("IPD");
+
+	    operationRepository.save(operation);
+	}
 }

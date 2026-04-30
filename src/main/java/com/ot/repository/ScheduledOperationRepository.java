@@ -179,4 +179,6 @@ public interface ScheduledOperationRepository extends JpaRepository<ScheduledOpe
 	Long countTodayOperations(@Param("hospitalId") Long hospitalId);
 	
 	List<ScheduledOperation> findByRoomAndStatus(OTRoom room, OperationStatus status);
+	
+	Optional<ScheduledOperation> findByIpdAdmissionId(String ipdAdmissionId);
 }

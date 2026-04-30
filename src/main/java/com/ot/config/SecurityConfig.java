@@ -36,6 +36,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/super-admin/register").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/ipd/ot-request").permitAll() // 👈 ONLY THIS OPEN
+                // 🔥 ADD THIS
+                .requestMatchers(HttpMethod.PUT, "/api/ot/mark-accepted-by-ipd").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )

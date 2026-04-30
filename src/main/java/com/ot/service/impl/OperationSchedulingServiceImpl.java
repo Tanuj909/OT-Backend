@@ -187,6 +187,8 @@ public class OperationSchedulingServiceImpl implements OperationSchedulingServic
 	            .isScheduled(isScheduled)
 	            .isStarted(isStarted)
 	            .isCompleted(isCompleted)
+	            .transferStatus(operation.getTransferStatus())
+	            .transferredTo(operation.getTransferredTo())
 	            .scheduledStartTime(operation.getScheduledStartTime())
 	            .actualStartTime(operation.getActualStartTime())
 	            .build();
