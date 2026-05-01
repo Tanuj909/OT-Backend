@@ -1,8 +1,11 @@
 package com.ot.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ot.dto.otRoom.FeatureMappingRequest;
@@ -68,6 +72,18 @@ public class OTRoomController {
 
         return ResponseEntity.ok(service.getByTheater(id));
     }
+    
+//    @GetMapping("/available-range")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<List<OTRoomResponse>> getAvailableRooms(
+//            @RequestParam Long theaterId,
+//            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+//            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
+//
+//        return ResponseEntity.ok(
+//        		service.getAvailableRooms(theaterId, startTime, endTime)
+//        );
+//    }
 
     @GetMapping("/{id}")
     public ResponseEntity<OTRoomResponse> getById(@PathVariable Long id) {

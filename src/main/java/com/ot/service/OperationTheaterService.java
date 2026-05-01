@@ -5,6 +5,7 @@ import java.util.List;
 import com.ot.dto.operationtheater.OperationTheaterCreateRequest;
 import com.ot.dto.operationtheater.OperationTheaterResponse;
 import com.ot.dto.otRoom.OTRoomResponse;
+import com.ot.enums.TheaterStatus;
 
 
 public interface OperationTheaterService {
@@ -20,4 +21,8 @@ public interface OperationTheaterService {
     void delete(Long id);
 
 	List<OTRoomResponse> getRoomsByTheater(Long theaterId);
+
+	List<OperationTheaterResponse> getActiveTheaters();
+
+	OperationTheaterResponse updateStatus(Long id, TheaterStatus status);
 }

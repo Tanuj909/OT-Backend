@@ -1,22 +1,24 @@
 package com.ot.service.impl;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import com.ot.dto.otRoom.FeatureMappingRequest;
 import com.ot.dto.otRoom.OTRoomCreateRequest;
 import com.ot.dto.otRoom.OTRoomFeatureResponse;
 import com.ot.dto.otRoom.OTRoomResponse;
+import com.ot.dto.otRoom.TimeSlotResponse;
 import com.ot.dto.otRoom.UpdateRoomStatusRequest;
 import com.ot.entity.Hospital;
 import com.ot.entity.OTRoom;
 import com.ot.entity.OTRoomFeature;
 import com.ot.entity.OperationTheater;
+import com.ot.entity.ScheduledOperation;
 import com.ot.entity.User;
 import com.ot.enums.RoleType;
 import com.ot.enums.RoomStatus;
@@ -26,9 +28,9 @@ import com.ot.mapper.OTRoomFeatureMapper;
 import com.ot.repository.OTRoomFeatureRepository;
 import com.ot.repository.OTRoomRepository;
 import com.ot.repository.OperationTheaterRepository;
+import com.ot.repository.ScheduledOperationRepository;
 import com.ot.security.CustomUserDetails;
 import com.ot.service.OTRoomService;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -40,6 +42,7 @@ public class OTRoomServiceImpl implements OTRoomService {
     private final OperationTheaterRepository theaterRepository;
     private final OTRoomFeatureRepository featureRepository;
     private final OTRoomFeatureMapper featureMapper;
+    private final ScheduledOperationRepository operationRepository;
     
 	public User currentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -186,7 +189,71 @@ public class OTRoomServiceImpl implements OTRoomService {
                 .map(this::map)
                 .toList();
     }
-
+    
+    
+//    @Override
+//    public List<TimeSlotResponse> getRoomTimeSlots(Long roomId, LocalDate date) {
+//
+//        User admin = currentUser();
+//
+//        if (admin.getRole() != RoleType.ADMIN) {
+//            throw new UnauthorizedException("Only Admin can access!");
+//        }
+//
+//        OTRoom room = roomRepository.findById(roomId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+//
+//        // 🔥 define day range
+//        LocalDateTime dayStart = date.atStartOfDay();         // 00:00
+//        LocalDateTime dayEnd = date.atTime(23, 59);           // 23:59
+//
+//        // 🔥 cleaning buffer
+//        int bufferMinutes = 60;
+//
+//        // 🔥 fetch all operations for that day
+//        List<ScheduledOperation> operations =
+//                operationRepository.findByRoomAndDate(roomId, dayStart, dayEnd);
+//
+//        List<TimeSlotResponse> slots = new ArrayList<>();
+//
+//        // 🔥 slot size = 30 mins
+//        int slotMinutes = 30;
+//
+//        for (LocalDateTime slotStart = dayStart;
+//             slotStart.isBefore(dayEnd);
+//             slotStart = slotStart.plusMinutes(slotMinutes)) {
+//
+//            LocalDateTime slotEnd = slotStart.plusMinutes(slotMinutes);
+//
+//            boolean isAvailable = true;
+//
+//            for (ScheduledOperation op : operations) {
+//
+//                LocalDateTime opStart = op.getScheduledStartTime();
+//                LocalDateTime opEnd = op.getScheduledEndTime();
+//
+//                if (opStart == null || opEnd == null) continue;
+//
+//                // 👉 apply cleaning buffer
+//                LocalDateTime blockedEnd = opEnd.plusMinutes(bufferMinutes);
+//
+//                // 🔥 OVERLAP CHECK (same as before)
+//                boolean overlap =
+//                        opStart.isBefore(slotEnd) &&
+//                        blockedEnd.isAfter(slotStart);
+//
+//                if (overlap) {
+//                    isAvailable = false;
+//                    break;
+//                }
+//            }
+//
+//            slots.add(new TimeSlotResponse(slotStart, slotEnd, isAvailable));
+//        }
+//
+//        return slots;
+//    }
+    
     @Override
     public OTRoomResponse getById(Long id) {
 
@@ -197,6 +264,7 @@ public class OTRoomServiceImpl implements OTRoomService {
     	}
 
         Hospital hospital = admin.getHospital();
+
 
         OTRoom room = roomRepository
                 .findByIdAndHospitalId(id, hospital.getId())

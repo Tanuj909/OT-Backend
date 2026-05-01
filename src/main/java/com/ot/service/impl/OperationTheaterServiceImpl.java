@@ -78,6 +78,7 @@ public class OperationTheaterServiceImpl implements OperationTheaterService {
 
         return repository.findByHospitalId(hospital.getId())
                 .stream()
+//                .filter(t -> t.getStatus() == TheaterStatus.ACTIVE)
                 .map(this::mapToResponse)
                 .toList();
     }
@@ -97,6 +98,23 @@ public class OperationTheaterServiceImpl implements OperationTheaterService {
                 .orElseThrow(() -> new RuntimeException("Operation Theater not found"));
 
         return mapToResponse(ot);
+    }
+    
+    @Override
+    public List<OperationTheaterResponse> getActiveTheaters() {
+
+        User admin = currentUser();
+        Long hospitalId = admin.getHospital().getId();
+
+        List<OperationTheater> theaters =
+                repository.findByStatusAndHospitalId(
+                        TheaterStatus.ACTIVE,
+                        hospitalId
+                );
+
+        return theaters.stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @Override
@@ -118,6 +136,29 @@ public class OperationTheaterServiceImpl implements OperationTheaterService {
         ot.setBuilding(request.getBuilding());
         ot.setFloor(request.getFloor());
         ot.setType(request.getType());
+        ot.setUpdatedBy(admin.getId().toString());
+
+        repository.save(ot);
+
+        return mapToResponse(ot);
+    }
+    
+    
+    @Override
+    public OperationTheaterResponse updateStatus(Long id, TheaterStatus status) {
+
+        User admin = currentUser();
+
+        if (admin.getRole() != RoleType.ADMIN) {
+            throw new UnauthorizedException("Only Admin can update OT status!");
+        }
+
+        Long hospitalId = admin.getHospital().getId();
+
+        OperationTheater ot = repository.findByIdAndHospitalId(id, hospitalId)
+                .orElseThrow(() -> new RuntimeException("Operation Theater not found"));
+
+        ot.setStatus(status);
         ot.setUpdatedBy(admin.getId().toString());
 
         repository.save(ot);

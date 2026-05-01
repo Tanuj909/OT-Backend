@@ -120,6 +120,21 @@ public interface ScheduledOperationRepository extends JpaRepository<ScheduledOpe
 	@Query("SELECT COUNT(o) FROM ScheduledOperation o WHERE DATE(o.createdAt) = CURRENT_DATE")
 	long countTodayOperations();
 	
+	
+	
+//--------------------------------------Getting Rooms by Start And End time:
+	@Query("""
+		    SELECT so FROM ScheduledOperation so
+		    WHERE so.room.id = :roomId
+		    AND so.scheduledStartTime <= :end
+		    AND so.scheduledEndTime >= :start
+		""")
+		List<ScheduledOperation> findByRoomAndDate(
+		        Long roomId,
+		        LocalDateTime start,
+		        LocalDateTime end
+		);
+	
 //----------------------------------------------------Admin Dashboard--------------------------------------------------------------------//
 	// ScheduledOperationRepository mein
 

@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ot.dto.operationtheater.OperationTheaterCreateRequest;
 import com.ot.dto.operationtheater.OperationTheaterResponse;
 import com.ot.dto.otRoom.OTRoomResponse;
+import com.ot.enums.TheaterStatus;
 import com.ot.service.OperationTheaterService;
 
 import jakarta.validation.Valid;
@@ -45,6 +47,12 @@ public class OperationTheaterController {
 
         return ResponseEntity.ok(service.getById(id));
     }
+    
+    @GetMapping("/active")
+    public ResponseEntity<List<OperationTheaterResponse>> getActiveTheaters() {
+
+        return ResponseEntity.ok(service.getActiveTheaters());
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<OperationTheaterResponse> update(
@@ -52,6 +60,14 @@ public class OperationTheaterController {
             @Valid @RequestBody OperationTheaterCreateRequest request) {
 
         return ResponseEntity.ok(service.update(id, request));
+    }
+    
+    @PutMapping("/{id}/status")
+    public ResponseEntity<OperationTheaterResponse> updateStatus(
+            @PathVariable Long id,
+            @RequestParam TheaterStatus status) {
+
+        return ResponseEntity.ok(service.updateStatus(id, status));
     }
     
     @GetMapping("/{theaterId}/rooms")

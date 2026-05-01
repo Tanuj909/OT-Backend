@@ -1,7 +1,6 @@
 package com.ot.service;
 
 import java.util.List;
-
 import com.ot.dto.otRoom.FeatureMappingRequest;
 import com.ot.dto.otRoom.OTRoomCreateRequest;
 import com.ot.dto.otRoom.OTRoomFeatureResponse;
@@ -36,4 +35,5 @@ public interface OTRoomService {
 	void unmapFeatures(Long roomId, FeatureMappingRequest request);
 
 	List<OTRoomFeatureResponse> getRoomFeatures(Long roomId);
+
 }
